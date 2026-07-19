@@ -151,7 +151,14 @@
           
           if (options.tokuteibi) {
             b3Select.innerHTML = '';
+            // 💡 先頭に「すべて」を追加
+            var firstEl = document.createElement('option');
+            firstEl.value = "";
+            firstEl.textContent = "すべて";
+            b3Select.appendChild(firstEl);
+
             options.tokuteibi.forEach(function(opt) {
+              if (opt === "通常") return; // 重複を防ぐ
               var el = document.createElement('option');
               el.value = opt;
               el.textContent = opt;
@@ -160,7 +167,14 @@
           }
           if (options.fukugo) {
             b4Select.innerHTML = '';
+            // 💡 先頭に「すべて」を追加
+            var firstEl4 = document.createElement('option');
+            firstEl4.value = "";
+            firstEl4.textContent = "すべて";
+            b4Select.appendChild(firstEl4);
+
             options.fukugo.forEach(function(opt) {
+              if (opt === "-") return; // 重複を防ぐ
               var el = document.createElement('option');
               el.value = opt;
               el.textContent = opt;
