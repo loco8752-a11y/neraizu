@@ -11,7 +11,6 @@
   <meta name="apple-mobile-web-app-title" content="ネライズ">
   
   <style>
-    /* 全要素のサイズ計算を枠線・内側余白込みに統一 */
     *, *::before, *::after {
       box-sizing: border-box;
     }
@@ -20,30 +19,43 @@
       --main-red: #E60012;
       --accent-orange: #FF8C00;
       --deep-black: #1A1A1A;
-      --light-gray: #f4f6f9;
+      --bg-slate: #f8fafc;
       --border-color: #e2e8f0;
+      
+      /* モダンスタイル用の勝率カラー */
+      --rate-high: #f43f5e;   /* 25%以上: モダンなローズレッド */
+      --rate-mid: #f59e0b;    /* 10-24%: 洗練されたアンバー */
+      --rate-low: #3b82f6;    /* 1-9%: 鮮やかなコバルトブルー */
+      --rate-zero: #ffffff;   /* 0%: 白カード */
+      --machine-bg: #e2e8f0;  /* 台番デフォルト: 高級感のあるライトグレー */
     }
 
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--light-gray); margin: 0; padding: 20px; color: #333; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+      background: #f1f5f9; 
+      margin: 0; 
+      padding: 20px; 
+      color: #1e293b; 
+    }
     
     .container { 
       max-width: 1400px; 
       margin: 0 auto; 
-      background: #fff; 
-      padding: 25px; 
-      border-radius: 8px; 
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+      background: #ffffff; 
+      padding: 28px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02); 
       width: 100%;
     }
     
     .filter-card {
       background: #f8fafc;
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
       width: 100%;
-      overflow: hidden; /* はみ出しを完全に防止 */
+      overflow: hidden;
     }
 
     .filter-group { 
@@ -57,14 +69,14 @@
     .filter-item {
       display: flex;
       flex-direction: column;
-      flex: 1 1 120px; /* 横幅に応じて柔軟に伸縮 */
-      min-width: 0;    /* 親要素からはみ出さないよう限界まで縮小許可 */
+      flex: 1 1 120px;
+      min-width: 0;
     }
 
     .filter-item label { 
       font-weight: 600; 
       font-size: 12px; 
-      color: #475569;
+      color: #64748b;
       margin-bottom: 6px; 
       white-space: nowrap;
     }
@@ -74,31 +86,30 @@
       width: 100% !important; 
       max-width: 100% !important;
       min-width: 0 !important;
-      height: 38px;
-      padding: 0 8px; 
+      height: 40px;
+      padding: 0 10px; 
       border: 1px solid #cbd5e1; 
-      border-radius: 6px; 
+      border-radius: 8px; 
       font-size: 13px;
       background-color: #fff;
-      color: #1e293b;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      color: #0f172a;
+      transition: all 0.2s ease;
       -webkit-appearance: none;
       appearance: none;
     }
 
-    /* selectの矢印アイコン調整 */
     .filter-item select {
-      background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%20475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+      background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%2064748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
       background-repeat: no-repeat;
-      background-position: right 8px center;
-      padding-right: 24px;
+      background-position: right 10px center;
+      padding-right: 28px;
     }
 
     .filter-item input:focus, 
     .filter-item select:focus {
       outline: none;
       border-color: var(--main-red);
-      box-shadow: 0 0 0 3px rgba(230, 0, 18, 0.1);
+      box-shadow: 0 0 0 3px rgba(230, 0, 18, 0.12);
     }
 
     .btn-container {
@@ -108,81 +119,116 @@
 
     button { 
       width: 100%; 
-      height: 38px;
+      height: 40px;
       background: var(--deep-black); 
       color: white; 
       border: none; 
-      border-radius: 6px; 
+      border-radius: 8px; 
       font-size: 14px; 
-      font-weight: bold; 
+      font-weight: 700; 
       cursor: pointer; 
-      transition: background 0.2s ease; 
+      transition: all 0.2s ease; 
       display: inline-flex;
       align-items: center;
       justify-content: center;
       white-space: nowrap;
     }
 
-    button:hover { background: var(--main-red); }
+    button:hover { 
+      background: var(--main-red); 
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(230, 0, 18, 0.25);
+    }
     
-    /* 注釈スタイル */
     .note-text {
       font-size: 12px;
-      color: #64748b;
+      color: #94a3b8;
       line-height: 1.5;
-      margin-top: 12px;
-      padding-top: 10px;
+      margin-top: 14px;
+      padding-top: 12px;
       border-top: 1px dashed #e2e8f0;
       width: 100%;
     }
 
     #loading { display: none; text-align: center; font-weight: bold; color: var(--main-red); margin: 20px 0; }
     
-    .tabs { display: flex; gap: 10px; margin-top: 20px; border-bottom: 2px solid var(--border-color); }
-    .tab-btn { padding: 10px 20px; background: #e9ecef; border: none; cursor: pointer; border-radius: 5px 5px 0 0; font-weight: bold; transition: 0.2s; }
+    .tabs { display: flex; gap: 8px; margin-top: 20px; border-bottom: 2px solid #f1f5f9; }
+    .tab-btn { padding: 10px 22px; background: #f1f5f9; color: #64748b; border: none; cursor: pointer; border-radius: 8px 8px 0 0; font-weight: 700; transition: all 0.2s; }
     .tab-btn.active { background: var(--main-red); color: white; }
     .tab-content { display: none; padding-top: 20px; }
     .tab-content.active { display: block; }
 
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid var(--border-color); padding: 10px; text-align: center; }
-    th { background-color: var(--deep-black); color: white; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+    th, td { padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+    th { background-color: #0f172a; color: white; font-weight: 600; font-size: 13px; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) { background-color: #f8fafc; }
     .rate-cell { font-weight: bold; color: var(--main-red); }
 
-    .map-scroll-container { width: 100%; overflow: auto; background: #fff; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; max-height: 80vh; }
+    /* 島図コンテナ：エクセル感排除の背景設計 */
+    .map-scroll-container { 
+      width: 100%; 
+      overflow: auto; 
+      background: #f8fafc; 
+      padding: 24px; 
+      border: 1px solid #e2e8f0; 
+      border-radius: 12px; 
+      max-height: 80vh; 
+    }
     
-    /* CSS Grid基本設定 */
+    /* CSS Grid：隙間を広げてカードスタイルにする */
     .grid-map { 
       display: grid; 
-      gap: 1px; 
-      background-color: #e0e0e0; 
+      gap: 3px; /* 隙間を開けて個別のカードに見せる */
+      background-color: transparent; /* グリッド背景の灰色を完全削除 */
       width: max-content; 
     }
     
+    /* 基本カードセル */
     .grid-cell { 
       font-size: 9px; 
       display: flex; 
       align-items: center; 
       justify-content: center; 
-      font-weight: bold; 
+      font-weight: 700; 
       user-select: none; 
       white-space: nowrap; 
       overflow: hidden; 
       text-overflow: ellipsis; 
-      padding: 0 2px; 
+      padding: 0 3px; 
+      border-radius: 4px; /* 角丸でエクセル感排除 */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* 柔らかな影 */
+      transition: all 0.15s ease;
     }
-    .grid-cell:hover { outline: 2px solid var(--accent-orange); cursor: crosshair; z-index: 10; }
-    .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
-    .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
+
+    /* ホバー時の浮き上がり演出 */
+    .grid-cell:not(.cell-empty):hover { 
+      transform: scale(1.08) translateY(-2px); 
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15); 
+      cursor: pointer; 
+      z-index: 20; 
+    }
+
+    /* 台番号セル (高設定以外) */
+    .cell-machine-default { 
+      background-color: #e2e8f0 !important; 
+      color: #334155 !important; 
+    }
+
+    /* 獲得率表示セル */
+    .cell-rate-default { 
+      background-color: #ffffff !important; 
+      color: #64748b !important; 
+      border: 1px solid #cbd5e1;
+    }
     
-    /* 機種名ラベル基本 */
+    /* 機種名ラベル */
     .cell-text-label { 
-      background-color: #f0f0f0 !important; 
-      color: #1a1a1a !important; 
-      font-weight: bold; 
+      background-color: #ffffff !important; 
+      color: #0f172a !important; 
+      font-weight: 700; 
       font-size: 8px; 
-      border: 1px solid #ccc; 
+      border: 1px solid #e2e8f0; 
       display: flex;
       align-items: center;
       justify-content: center !important;
@@ -193,15 +239,15 @@
       word-break: keep-all;
       padding: 0 2px;
       line-height: 1.1;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
 
-    /* 1マス（結合なし）のみ：横書きは左揃え */
     .cell-single-cell {
       justify-content: flex-start !important;
       text-align: left !important;
     }
 
-    /* 縦書き用CSS */
     .vertical-text {
       writing-mode: vertical-rl;
       text-orientation: upright;
@@ -212,19 +258,22 @@
       text-align: center !important;
     }
 
-    /* 1マス（結合なし）のみ：縦書きは上揃え */
     .vertical-text.cell-single-cell {
       justify-content: flex-start !important;
       text-align: start !important;
     }
 
-    .cell-empty { background-color: #ffffff !important; border: none !important; }
+    /* 通路セル（影・枠線を消して背景に溶け込ませる） */
+    .cell-empty { 
+      background-color: transparent !important; 
+      border: none !important; 
+      box-shadow: none !important;
+    }
 
-    /* スマホ表示（画面幅768px以下は1列に縦並び） */
     @media (max-width: 768px) {
       body { padding: 10px; }
-      .container { padding: 12px; }
-      .filter-card { padding: 12px; }
+      .container { padding: 16px; }
+      .filter-card { padding: 14px; }
       
       .filter-group { 
         display: flex;
@@ -242,7 +291,6 @@
         margin: 0 !important;
       }
 
-      /* SP特有のdate入力欄のはみ出し対策 */
       .filter-item input[type="date"],
       .filter-item input, 
       .filter-item select {
@@ -251,22 +299,12 @@
         min-width: 0 !important;
         box-sizing: border-box !important;
         font-size: 14px;
-        padding: 0 6px !important;
+        padding: 0 8px !important;
       }
 
-      /* カレンダーアイコン等による崩れ防止 */
       input[type="date"]::-webkit-calendar-picker-indicator {
         margin-left: 0;
         padding: 0;
-      }
-
-      .cell-text-label.cell-single-cell {
-        justify-content: flex-start !important;
-        text-align: left !important;
-      }
-      .vertical-text.cell-single-cell {
-        justify-content: flex-start !important;
-        text-align: start !important;
       }
     }
   </style>
@@ -275,7 +313,7 @@
   <div class="container">
     <img src="https://lh3.googleusercontent.com/d/1Rxr_lbg6avmphtp0D6JBydly1xcUFS73" 
          alt="ネライズ-スロット島図分析ツール" 
-         style="height: 80px; width: auto; display: block; margin-bottom: 15px;">
+         style="height: 75px; width: auto; display: block; margin-bottom: 20px;">
     
     <div class="filter-card">
       <div class="filter-group">
@@ -308,14 +346,13 @@
         </div>
       </div>
 
-      <!-- 注釈エリア -->
       <div class="note-text">
         ※表示されている機種名は最新の島図配置に基づきます。<br>
         ※過去指定期間中に設置されていた旧機種の獲得率・データも含まれて分析・集計されています。
       </div>
     </div>
     
-    <div id="loading">⏳ データを集計中...（数秒かかります）</div>
+    <div id="loading">⏳ 集計中... 少々お待ちください</div>
     
     <div id="outputArea" style="display:none;">
       <div class="tabs">
@@ -347,8 +384,6 @@
 
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
-
-    // 島図内に不要なスプレッドシートヘッダー文字リスト
     const IGNORE_HEADER_WORDS = ["開始日", "終了日", "特定日", "複合イベント", "曜日", "日付"];
 
     window.onload = function() {
@@ -417,7 +452,6 @@
       var startDateVal = startDateInput ? startDateInput.value : '';
       var endDateVal = endDateInput ? endDateInput.value : '';
 
-      // 日付のチェック（開始日・終了日の両方が選択されていて、終了日が開始日より前の場合はブロック）
       if (startDateVal && endDateVal && startDateVal > endDateVal) {
         alert('エラー: 終了期間は開始日以降の日付を指定してください。');
         return false;
@@ -454,11 +488,12 @@
       });
     }
 
+    // モダンカラー変更 (赤: #f43f5e / オレンジ: #f59e0b / 青: #3b82f6)
     function getColorHex(rate) {
       var percent = Math.round(rate * 100);
-      if (percent >= 25) return '#ff0000';
-      if (percent >= 10 && percent <= 24) return '#ff9900';
-      if (percent >= 1 && percent <= 9) return '#2196f3';
+      if (percent >= 25) return '#f43f5e';
+      if (percent >= 10 && percent <= 24) return '#f59e0b';
+      if (percent >= 1 && percent <= 9) return '#3b82f6';
       return null;
     }
 
@@ -553,18 +588,13 @@
             }
           }
 
-          // 記号のみ（}, ), ?, ! など）を判定する正規表現
           var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜]+$/.test(cellValue);
-
-          // 2000年代〜2090年代の日付パターンを包括的に検出 (例: 2026-07-aa, 2026/7/1, 26/07/01 など)
           var isDatePattern = /^(20\d{2}|2\d)[\/\-\.\s年]\d{1,2}([\/\-\.\s月][a-zA-Z0-9]{1,2}日?)?$/.test(cellValue) ||
                               /^\d{4}-\d{2}-[a-zA-Z0-9]{1,2}$/.test(cellValue) ||
                               /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(cellValue);
 
-          // 左上端（最初の3行かつ最初の3列）にある日付関連文字列・日付文字を強力除外
           var isTopLeftDateArea = (r <= 2 && c <= 2) && (isDatePattern || cellValue.toLowerCase().includes('202') || cellValue.includes('年') || cellValue.includes('月') || cellValue.includes('日'));
 
-          // 空セル、ヘッダー単語、日付、記号のみセルを除外（透明表示）
           if (cellValue === "" || 
               IGNORE_HEADER_WORDS.includes(cellValue) || 
               isDatePattern ||
@@ -609,13 +639,12 @@
             var color = getColorHex(rate);
             var displayPercent = rate !== undefined ? (rate * 100).toFixed(0) + "%" : cellValue;
             if (color) {
-              htmlBuilder += '<div class="grid-cell" style="' + spanStyle + ' background-color: #ffffff; color: ' + color + ';" title="台: ' + matchedMachineId + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + displayPercent + '</div>';
+              htmlBuilder += '<div class="grid-cell" style="' + spanStyle + ' background-color: #ffffff; color: ' + color + '; border: 1.5px solid ' + color + ';" title="台: ' + matchedMachineId + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + displayPercent + '</div>';
             } else {
               htmlBuilder += '<div class="grid-cell cell-rate-default" style="' + spanStyle + '" title="台: ' + matchedMachineId + '\n確率: 0.0%">' + displayPercent + '</div>';
             }
           } 
           else {
-            // 機種名ラベル
             var singleClass = (!isMerged) ? ' cell-single-cell' : '';
             var vertClass = isVertical ? ' vertical-text' : '';
 
