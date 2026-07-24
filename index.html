@@ -1,19 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <!-- 👇 この行を追加することで、Googleの検索エンジンに「登録しないで！」と命令できます -->
   <meta name="robots" content="noindex, nofollow">
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 💡 ここに好きなタブのタイトルを自由に設定できます！ -->
   <title>ネライズ - スロット島図分析ツール</title>
 
-  <!-- 👇 ここから3行を追加します -->
   <link rel="icon" href="icon.png" type="image/png">
   <link rel="apple-touch-icon" href="icon.png">
   <meta name="apple-mobile-web-app-title" content="ネライズ">
-  <!-- 👆 ここまで -->
   
   <style>
     :root {
@@ -53,10 +48,11 @@
     .map-scroll-container { width: 100%; overflow-x: auto; background: #fff; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; }
     .grid-map { display: grid; grid-template-columns: repeat(61, 30px); grid-template-rows: repeat(55, 24px); gap: 1px; background-color: #e0e0e0; width: max-content; }
     
-    .grid-cell { font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; user-select: none; box-sizing: border-box; }
+    .grid-cell { font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: bold; user-select: none; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 1px; }
     .grid-cell:hover { outline: 2px solid var(--accent-orange); cursor: crosshair; z-index: 10; }
     .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
     .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
+    .cell-text-label { background-color: #f0f0f0 !important; color: #1a1a1a !important; font-weight: bold; font-size: 8px; border: 1px solid #ccc; }
     .cell-empty { background-color: #ffffff !important; border: none !important; }
 
     /* スマートフォン向けのレスポンシブ対応 */
@@ -141,11 +137,9 @@
   </div>
 
   <script>
-    // ⚠️ あなたのGASウェブアプリURL（/exec）をここに貼り付けてください
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
 
     window.onload = function() {
-      // API経由でプルダウンの選択肢を取得
       fetch(GAS_API_URL, {
         method: "POST",
         body: JSON.stringify({ action: "getOptions" }),
@@ -160,14 +154,13 @@
           
           if (options.tokuteibi) {
             b3Select.innerHTML = '';
-            // 💡 先頭に「すべて」を追加
             var firstEl = document.createElement('option');
             firstEl.value = "";
             firstEl.textContent = "すべて";
             b3Select.appendChild(firstEl);
 
             options.tokuteibi.forEach(function(opt) {
-              if (opt === "通常") return; // 重複を防ぐ
+              if (opt === "通常") return;
               var el = document.createElement('option');
               el.value = opt;
               el.textContent = opt;
@@ -176,14 +169,13 @@
           }
           if (options.fukugo) {
             b4Select.innerHTML = '';
-            // 💡 先頭に「すべて」を追加
             var firstEl4 = document.createElement('option');
             firstEl4.value = "";
             firstEl4.textContent = "すべて";
             b4Select.appendChild(firstEl4);
 
             options.fukugo.forEach(function(opt) {
-              if (opt === "-") return; // 重複を防ぐ
+              if (opt === "-") return;
               var el = document.createElement('option');
               el.value = opt;
               el.textContent = opt;
@@ -216,7 +208,6 @@
         b5: document.getElementById('b5').value
       };
       
-      // API経由で分析マクロを実行
       fetch(GAS_API_URL, {
         method: "POST",
         body: JSON.stringify({ action: "runAnalysis", conditions: conditions }),
@@ -293,12 +284,16 @@
       for (var r = 0; r < maxRows; r++) {
         for (var c = 0; c < maxCols; c++) {
           var cellValue = getVal(r, c);
+          
           if (cellValue === "") {
             htmlBuilder += '<div class="grid-cell cell-empty"></div>';
             continue;
           }
 
+          // 1. 台番号セル判定（数値データかつrateMapに存在する）
           var isMachine = (rateMap[cellValue] !== undefined);
+          
+          // 2. 確率表示セル判定（近隣に台番号が存在する）
           var matchedMachineId = "";
           if (!isMachine) {
             var searchOffsets = [
@@ -309,19 +304,19 @@
               var offset = searchOffsets[i];
               var targetVal = getVal(r + offset.dr, c + offset.dc);
               if (targetVal !== "" && rateMap[targetVal] !== undefined) {
-                matchedMachineId = targetVal;
-                break;
+                // セルの中身が％表記か空文字列の場合のみ確率セルと判定
+                if (cellValue.includes("%") || !isNaN(cellValue) || cellValue === "") {
+                  matchedMachineId = targetVal;
+                  break;
+                }
               }
             }
           }
           var isRateCell = (matchedMachineId !== "");
 
-          if (!isMachine && !isRateCell) {
-            htmlBuilder += '<div class="grid-cell cell-empty"></div>';
-            continue;
-          }
-
+          // 3. セルの描画切り分け
           if (isMachine) {
+            // 台番号セル（ヒートマップカラー適用）
             var rate = rateMap[cellValue];
             var color = getColorHex(rate);
             if (color) {
@@ -331,6 +326,7 @@
             }
           } 
           else if (isRateCell) {
+            // 確率セル（数値％を表示）
             var rate = rateMap[matchedMachineId];
             var color = getColorHex(rate);
             var displayPercent = rate !== undefined ? (rate * 100).toFixed(0) + "%" : cellValue;
@@ -339,6 +335,10 @@
             } else {
               htmlBuilder += '<div class="grid-cell cell-rate-default" title="台: ' + matchedMachineId + '\n確率: 0.0%">' + displayPercent + '</div>';
             }
+          } 
+          else {
+            // ★【修正ポイント】台番号でも確率セルでもないテキスト ➜ 機種名ラベルとして描画
+            htmlBuilder += '<div class="grid-cell cell-text-label" title="' + cellValue + '">' + cellValue + '</div>';
           }
         }
       }
