@@ -266,7 +266,7 @@
           </select>
         </div>
         <div class="btn-container">
-          <button onclick="executeAnalysis()">分析を実行</button>
+          <button type="button" onclick="executeAnalysis(event)">分析を実行</button>
         </div>
       </div>
 
@@ -370,15 +370,18 @@
       btn.classList.add('active');
     }
 
-    function executeAnalysis() {
+    function executeAnalysis(e) {
+      if (e) e.preventDefault();
+
       var startDateVal = document.getElementById('startDate').value;
       var endDateVal = document.getElementById('endDate').value;
 
-      // 日付チェック：文字列比較（YYYY-MM-DD 形式）で確実に判定
+      // 日付チェック：開始日・終了日の両方に値が入っている場合のみ比較
       if (startDateVal && endDateVal) {
+        // 文字列の直接比較 (例: "2026-07-16" > "2026-07-01")
         if (startDateVal > endDateVal) {
           alert('エラー: 終了日は開始日以降の日付を指定してください。');
-          return;
+          return false; // 処理を即時ブロック
         }
       }
 
