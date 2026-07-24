@@ -22,7 +22,6 @@
     body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--light-gray); margin: 0; padding: 20px; color: #333; }
     .container { max-width: 1400px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     
-    /* フィルターエリアの綺麗・コンパクトなレイアウト修正 */
     .filter-card {
       background: #f8fafc;
       border: 1px solid var(--border-color);
@@ -138,7 +137,7 @@
     .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
     .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
     
-    /* 機種名ラベル用基本スタイル（結合セルは中央揃え） */
+    /* 機種名ラベル基本 */
     .cell-text-label { 
       background-color: #f0f0f0 !important; 
       color: #1a1a1a !important; 
@@ -147,8 +146,8 @@
       border: 1px solid #ccc; 
       display: flex;
       align-items: center;
-      justify-content: center;
-      text-align: center;
+      justify-content: center !important;
+      text-align: center !important;
       white-space: nowrap !important;
       overflow: hidden; 
       text-overflow: ellipsis; 
@@ -158,24 +157,24 @@
       line-height: 1.1;
     }
 
-    /* 1マス（結合なし）用：横書きは左揃え */
+    /* 1マス（結合なし）のみ：横書きは左揃え */
     .cell-single-cell {
       justify-content: flex-start !important;
       text-align: left !important;
     }
 
-    /* 縦書き用CSS（結合セルは中央揃え） */
+    /* 縦書き用CSS */
     .vertical-text {
       writing-mode: vertical-rl;
       text-orientation: upright;
       letter-spacing: -0.5px;
       font-size: 8px;
       align-items: center;
-      justify-content: center;
-      text-align: center;
+      justify-content: center !important;
+      text-align: center !important;
     }
 
-    /* 1マス（結合なし）用：縦書きは上揃え */
+    /* 1マス（結合なし）のみ：縦書きは上揃え */
     .vertical-text.cell-single-cell {
       justify-content: flex-start !important;
       text-align: start !important;
@@ -263,6 +262,9 @@
 
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
+
+    // 島図内に不要なスプレッドシートヘッダー文字リスト
+    const IGNORE_HEADER_WORDS = ["開始日", "終了日", "特定日", "複合イベント", "曜日"];
 
     window.onload = function() {
       fetch(GAS_API_URL, {
@@ -398,7 +400,6 @@
       var maxRows = layout.length;
       var maxCols = layout[0] ? layout[0].length : 0;
 
-      // GRID の動的サイズ設定
       gridMap.style.gridTemplateColumns = 'repeat(' + maxCols + ', 30px)';
       gridMap.style.gridTemplateRows = 'repeat(' + maxRows + ', 24px)';
 
@@ -440,16 +441,21 @@
           var isMerged = false;
 
           if (mergeInfo) {
-            spanStyle = 'grid-column: span ' + mergeInfo.numCols + '; grid-row: span ' + mergeInfo.numRows + ';';
-            if (mergeInfo.numRows > mergeInfo.numCols) {
+            var numCols = Number(mergeInfo.numCols) || 1;
+            var numRows = Number(mergeInfo.numRows) || 1;
+            
+            spanStyle = 'grid-column: span ' + numCols + '; grid-row: span ' + numRows + ';';
+            
+            if (numRows > numCols) {
               isVertical = true;
             }
-            if (mergeInfo.numCols > 1 || mergeInfo.numRows > 1) {
+            if (numCols > 1 || numRows > 1) {
               isMerged = true;
             }
           }
 
-          if (cellValue === "") {
+          // 空セル、またはスプレッドシート左上の管理用ヘッダー文字列（「開始日」「特定日」など）は空セルとして透過表示
+          if (cellValue === "" || IGNORE_HEADER_WORDS.includes(cellValue) || cellValue.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
             htmlBuilder += '<div class="grid-cell cell-empty" style="' + spanStyle + '"></div>';
             continue;
           }
@@ -495,6 +501,7 @@
             }
           } 
           else {
+            // 機種名ラベル
             var singleClass = (!isMerged) ? ' cell-single-cell' : '';
             var vertClass = isVertical ? ' vertical-text' : '';
 
