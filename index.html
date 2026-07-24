@@ -98,6 +98,16 @@
 
     button:hover { background: var(--main-red); }
     
+    /* 注釈スタイル */
+    .note-text {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #e2e8f0;
+    }
+
     #loading { display: none; text-align: center; font-weight: bold; color: var(--main-red); margin: 20px 0; }
     
     .tabs { display: flex; gap: 10px; margin-top: 20px; border-bottom: 2px solid var(--border-color); }
@@ -256,6 +266,12 @@
         <div class="btn-container">
           <button onclick="executeAnalysis()">分析を実行</button>
         </div>
+      </div>
+
+      <!-- 注釈エリア -->
+      <div class="note-text">
+        ※表示されている機種名は最新の島図配置に基づきます。<br>
+        ※過去指定期間中に設置されていた旧機種の獲得率・データも含まれて分析・集計されています。
       </div>
     </div>
     
