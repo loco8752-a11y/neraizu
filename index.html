@@ -349,7 +349,7 @@
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
 
     // 島図内に不要なスプレッドシートヘッダー文字リスト
-    const IGNORE_HEADER_WORDS = ["開始日", "終了日", "特定日", "複合イベント", "曜日"];
+    const IGNORE_HEADER_WORDS = ["開始日", "終了日", "特定日", "複合イベント", "曜日", "日付"];
 
     window.onload = function() {
       fetch(GAS_API_URL, {
@@ -556,10 +556,13 @@
           // 記号のみ（}, ), ?, ! など）を判定する正規表現
           var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜]+$/.test(cellValue);
 
+          // さまざまな形式の日付パターン（2026-07-aa, 2026/01/01, 2026年1月1日, 1/1 など）を広く検出
+          var isDatePattern = /^\d{2,4}[\/\-\.\s年]\d{1,2}([\/\-\.\s月][a-zA-Z0-9]{1,2}日?)?$/.test(cellValue) || /^\d{4}-\d{2}-[a-zA-Z0-9]{2}$/.test(cellValue);
+
           // 空セル、ヘッダー単語、日付、記号のみセルを除外（透明表示）
           if (cellValue === "" || 
               IGNORE_HEADER_WORDS.includes(cellValue) || 
-              cellValue.match(/^\d{4}\/\d{2}\/\d{2}$/) ||
+              isDatePattern ||
               isOnlySymbol) {
             htmlBuilder += '<div class="grid-cell cell-empty" style="' + spanStyle + '"></div>';
             continue;
