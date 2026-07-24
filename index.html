@@ -72,7 +72,7 @@
     .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
     .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
     
-    /* 機種名ラベル用スタイル（文字あふれ防止・最適化） */
+    /* 機種名ラベル用スタイル（はみ出し時は左揃え） */
     .cell-text-label { 
       background-color: #f0f0f0 !important; 
       color: #1a1a1a !important; 
@@ -81,23 +81,26 @@
       border: 1px solid #ccc; 
       display: flex;
       align-items: center;
-      justify-content: center;
-      text-align: center;
+      justify-content: flex-start; /* ★横書きは左揃えにして先頭文字を見せる */
+      text-align: left;
       white-space: nowrap !important;
       overflow: hidden; 
       text-overflow: ellipsis; 
       word-break: keep-all;
       box-sizing: border-box;
-      padding: 1px;
+      padding: 0 2px;
       line-height: 1.1;
     }
 
-    /* 縦書き用CSS（詰めて配置） */
+    /* 縦書き用CSS（はみ出し時は上揃え） */
     .vertical-text {
       writing-mode: vertical-rl;
       text-orientation: upright;
       letter-spacing: -0.5px;
       font-size: 8px;
+      justify-content: flex-start !important; /* ★縦書きは上揃えにして頭文字を見せる */
+      align-items: center;
+      text-align: start;
     }
 
     .cell-empty { background-color: #ffffff !important; border: none !important; }
