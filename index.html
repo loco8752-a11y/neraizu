@@ -11,6 +11,11 @@
   <meta name="apple-mobile-web-app-title" content="ネライズ">
   
   <style>
+    /* 全要素でサイズ計算を共通化（枠線やパディングを含めた幅にする） */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     :root {
       --main-red: #E60012;
       --accent-orange: #FF8C00;
@@ -28,7 +33,7 @@
       padding: 25px; 
       border-radius: 8px; 
       box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-      box-sizing: border-box;
+      width: 100%;
     }
     
     .filter-card {
@@ -37,8 +42,8 @@
       border-radius: 8px;
       padding: 16px 20px;
       margin-bottom: 20px;
-      box-sizing: border-box;
       width: 100%;
+      overflow: hidden; /* 万が一のはみ出しを確実に防止 */
     }
 
     .filter-group { 
@@ -47,15 +52,14 @@
       gap: 12px 15px; 
       align-items: flex-end; 
       width: 100%;
-      box-sizing: border-box;
     }
 
     .filter-item {
       display: flex;
       flex-direction: column;
-      flex: 1 1 140px; /* 画面が狭くなったら自動で折り返し・縮小 */
-      min-width: 0;   /* 親要素からはみ出さないよう限界まで縮小を許可 */
-      box-sizing: border-box;
+      flex: 1 1 150px; /* 自動伸縮 */
+      min-width: 0;    /* フレックスアイテムのはみ出しを強力に抑止 */
+      width: 100%;
     }
 
     .filter-item label { 
@@ -68,18 +72,27 @@
 
     .filter-item input, 
     .filter-item select { 
-      width: 100%; 
-      max-width: 100%;
-      min-width: 0;
+      width: 100% !important; 
+      max-width: 100% !important;
+      min-width: 0 !important;
       height: 38px;
       padding: 0 10px; 
-      box-sizing: border-box; 
       border: 1px solid #cbd5e1; 
       border-radius: 6px; 
       font-size: 13px;
       background-color: #fff;
       color: #1e293b;
       transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none; /* iOS/Safariでの表示崩れ防止 */
+      appearance: none;
+    }
+
+    /* selectの矢印アイコン調整 */
+    .filter-item select {
+      background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%20475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
     }
 
     .filter-item input:focus, 
@@ -90,9 +103,9 @@
     }
 
     .btn-container {
-      flex: 1 1 140px;
+      flex: 1 1 150px;
       min-width: 0;
-      box-sizing: border-box;
+      width: 100%;
     }
 
     button { 
@@ -109,7 +122,6 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      box-sizing: border-box;
     }
 
     button:hover { background: var(--main-red); }
@@ -122,6 +134,7 @@
       margin-top: 12px;
       padding-top: 10px;
       border-top: 1px dashed #e2e8f0;
+      width: 100%;
     }
 
     #loading { display: none; text-align: center; font-weight: bold; color: var(--main-red); margin: 20px 0; }
@@ -138,7 +151,7 @@
     tr:nth-child(even) { background-color: #f9f9f9; }
     .rate-cell { font-weight: bold; color: var(--main-red); }
 
-    .map-scroll-container { width: 100%; overflow: auto; background: #fff; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; max-height: 80vh; box-sizing: border-box; }
+    .map-scroll-container { width: 100%; overflow: auto; background: #fff; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; max-height: 80vh; }
     
     /* CSS Grid基本設定 */
     .grid-map { 
@@ -155,7 +168,6 @@
       justify-content: center; 
       font-weight: bold; 
       user-select: none; 
-      box-sizing: border-box; 
       white-space: nowrap; 
       overflow: hidden; 
       text-overflow: ellipsis; 
@@ -180,7 +192,6 @@
       overflow: hidden; 
       text-overflow: ellipsis; 
       word-break: keep-all;
-      box-sizing: border-box;
       padding: 0 2px;
       line-height: 1.1;
     }
@@ -210,7 +221,7 @@
 
     .cell-empty { background-color: #ffffff !important; border: none !important; }
 
-    /* スマホ表示（1列縦並び設定） */
+    /* スマホ表示（画面幅768px以下は1列に縦並び） */
     @media (max-width: 768px) {
       body { padding: 10px; }
       .container { padding: 12px; }
@@ -225,7 +236,6 @@
       
       .filter-item,
       .btn-container { 
-        min-width: 0 !important; 
         width: 100% !important;
         flex: none !important;
         margin: 0 !important;
