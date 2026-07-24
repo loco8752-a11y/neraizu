@@ -72,7 +72,7 @@
     .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
     .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
     
-    /* 機種名ラベル用スタイル（はみ出し時は左揃え） */
+    /* 機種名ラベル用スタイル（1マスも含め基本すべて左揃え） */
     .cell-text-label { 
       background-color: #f0f0f0 !important; 
       color: #1a1a1a !important; 
@@ -81,8 +81,8 @@
       border: 1px solid #ccc; 
       display: flex;
       align-items: center;
-      justify-content: flex-start; /* ★横書きは左揃えにして先頭文字を見せる */
-      text-align: left;
+      justify-content: flex-start !important; /* ★ 1マス・複数マス問わず常に左揃え（はみ出し時に頭文字を維持） */
+      text-align: left !important;
       white-space: nowrap !important;
       overflow: hidden; 
       text-overflow: ellipsis; 
@@ -92,15 +92,15 @@
       line-height: 1.1;
     }
 
-    /* 縦書き用CSS（はみ出し時は上揃え） */
+    /* 縦書き用CSS（上揃え） */
     .vertical-text {
       writing-mode: vertical-rl;
       text-orientation: upright;
       letter-spacing: -0.5px;
       font-size: 8px;
-      justify-content: flex-start !important; /* ★縦書きは上揃えにして頭文字を見せる */
+      justify-content: flex-start !important; /* ★ 縦書きは上揃え */
       align-items: center;
-      text-align: start;
+      text-align: start !important;
     }
 
     .cell-empty { background-color: #ffffff !important; border: none !important; }
@@ -360,7 +360,6 @@
 
           if (mergeInfo) {
             spanStyle = 'grid-column: span ' + mergeInfo.numCols + '; grid-row: span ' + mergeInfo.numRows + ';';
-            // 縦方向への結合（Rows > Cols）なら縦書きフラグON
             if (mergeInfo.numRows > mergeInfo.numCols) {
               isVertical = true;
             }
@@ -412,10 +411,10 @@
             }
           } 
           else {
-            // 機種名ラベル（縦結合の場合は vertical-text クラスを付与）
+            // 機種名ラベル
             var vertClass = isVertical ? ' vertical-text' : '';
             
-            // ★ 文字数に応じてフォントサイズを動的に最適化
+            // 文字数に応じてフォントサイズ調整
             var len = cellValue.length;
             var customFontSize = '8px';
             if (len > 12) {
