@@ -22,12 +22,11 @@
       --bg-slate: #f8fafc;
       --border-color: #e2e8f0;
       
-      /* モダンスタイル用の勝率カラー */
-      --rate-high: #f43f5e;   /* 25%以上: モダンなローズレッド */
-      --rate-mid: #f59e0b;    /* 10-24%: 洗練されたアンバー */
-      --rate-low: #3b82f6;    /* 1-9%: 鮮やかなコバルトブルー */
+      --rate-high: #f43f5e;   /* 25%以上: ローズレッド */
+      --rate-mid: #f59e0b;    /* 10-24%: アンバー */
+      --rate-low: #3b82f6;    /* 1-9%: コバルトブルー */
       --rate-zero: #ffffff;   /* 0%: 白カード */
-      --machine-bg: #e2e8f0;  /* 台番デフォルト: 高級感のあるライトグレー */
+      --machine-bg: #e2e8f0;  /* 台番デフォルト: ライトグレー */
     }
 
     body { 
@@ -165,26 +164,64 @@
     tr:nth-child(even) { background-color: #f8fafc; }
     .rate-cell { font-weight: bold; color: var(--main-red); }
 
-    /* 島図コンテナ：エクセル感排除の背景設計 */
+    /* 🧭 スクロールインジケーター（指示バー） */
+    .scroll-hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 8px 8px 0 0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: opacity 0.5s ease;
+    }
+    
+    .scroll-hint-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .scroll-icon {
+      display: inline-block;
+      animation: pulseSlide 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulseSlide {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(4px); }
+    }
+
+    .scroll-hint-badge {
+      background: rgba(230, 0, 18, 0.9);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+    }
+
     .map-scroll-container { 
       width: 100%; 
       overflow: auto; 
       background: #f8fafc; 
       padding: 24px; 
       border: 1px solid #e2e8f0; 
-      border-radius: 12px; 
+      border-radius: 0 0 12px 12px; 
       max-height: 80vh; 
+      position: relative;
     }
     
-    /* CSS Grid：隙間を広げてカードスタイルにする */
     .grid-map { 
       display: grid; 
-      gap: 3px; /* 隙間を開けて個別のカードに見せる */
-      background-color: transparent; /* グリッド背景の灰色を完全削除 */
+      gap: 3px; 
+      background-color: transparent; 
       width: max-content; 
     }
     
-    /* 基本カードセル */
     .grid-cell { 
       font-size: 9px; 
       display: flex; 
@@ -196,12 +233,11 @@
       overflow: hidden; 
       text-overflow: ellipsis; 
       padding: 0 3px; 
-      border-radius: 4px; /* 角丸でエクセル感排除 */
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* 柔らかな影 */
+      border-radius: 4px; 
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); 
       transition: all 0.15s ease;
     }
 
-    /* ホバー時の浮き上がり演出 */
     .grid-cell:not(.cell-empty):hover { 
       transform: scale(1.08) translateY(-2px); 
       box-shadow: 0 6px 12px rgba(0,0,0,0.15); 
@@ -209,20 +245,17 @@
       z-index: 20; 
     }
 
-    /* 台番号セル (高設定以外) */
     .cell-machine-default { 
       background-color: #e2e8f0 !important; 
       color: #334155 !important; 
     }
 
-    /* 獲得率表示セル */
     .cell-rate-default { 
       background-color: #ffffff !important; 
       color: #64748b !important; 
       border: 1px solid #cbd5e1;
     }
     
-    /* 機種名ラベル */
     .cell-text-label { 
       background-color: #ffffff !important; 
       color: #0f172a !important; 
@@ -263,7 +296,6 @@
       text-align: start !important;
     }
 
-    /* 通路セル（影・枠線を消して背景に溶け込ませる） */
     .cell-empty { 
       background-color: transparent !important; 
       border: none !important; 
@@ -361,7 +393,16 @@
       </div>
 
       <div id="mapTab" class="tab-content active">
-        <div class="map-scroll-container">
+        <!-- インタラクティブ・スクロール指示バー -->
+        <div id="scrollHint" class="scroll-hint">
+          <div class="scroll-hint-left">
+            <span class="scroll-icon">↔</span> 
+            <span>上下左右に自由に動かせます</span>
+          </div>
+          <span class="scroll-hint-badge">Scrollable Area</span>
+        </div>
+
+        <div class="map-scroll-container" id="mapScrollContainer">
           <div id="gridMap" class="grid-map"></div>
         </div>
       </div>
@@ -384,7 +425,14 @@
 
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
-    const IGNORE_HEADER_WORDS = ["開始日", "終了日", "特定日", "複合イベント", "曜日", "日付"];
+    
+    // 消去対象の見出し・選択値・システム用文字リスト
+    const IGNORE_HEADER_WORDS = [
+      "開始日", "終了日", "特定日", "複合イベント", "曜日", "日付", "イベント", 
+      "条件", "検索条件", "期間", "対象期間", "すべて", "通常", "-", "おまち", "お待ち",
+      "日", "月", "火", "水", "木", "金", "土",
+      "日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"
+    ];
 
     window.onload = function() {
       fetch(GAS_API_URL, {
@@ -432,6 +480,19 @@
         }
       })
       .catch(err => console.error("プルダウン取得失敗:", err));
+
+      // スクロール時にインジケーターをすっと非表示にする処理
+      var mapContainer = document.getElementById('mapScrollContainer');
+      var scrollHint = document.getElementById('scrollHint');
+      if (mapContainer && scrollHint) {
+        mapContainer.addEventListener('scroll', function() {
+          if (mapContainer.scrollLeft > 20 || mapContainer.scrollTop > 20) {
+            scrollHint.style.opacity = '0.3';
+          } else {
+            scrollHint.style.opacity = '1';
+          }
+        });
+      }
     };
 
     function switchTab(tabId, btn) {
@@ -488,13 +549,30 @@
       });
     }
 
-    // モダンカラー変更 (赤: #f43f5e / オレンジ: #f59e0b / 青: #3b82f6)
     function getColorHex(rate) {
       var percent = Math.round(rate * 100);
       if (percent >= 25) return '#f43f5e';
       if (percent >= 10 && percent <= 24) return '#f59e0b';
       if (percent >= 1 && percent <= 9) return '#3b82f6';
       return null;
+    }
+
+    function isInvalidContent(cellValue) {
+      if (!cellValue || cellValue.trim() === "") return true;
+      var str = cellValue.trim();
+      var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜・]+$/.test(str);
+      var isDatePattern = /^(20\d{2}|2\d)[\/\-\.\s年]\d{1,2}([\/\-\.\s月][a-zA-Z0-9]{1,2}日?)?$/.test(str) ||
+                          /^\d{4}-\d{2}-[a-zA-Z0-9]{1,2}$/.test(str) ||
+                          /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(str);
+      var isIgnoreWord = IGNORE_HEADER_WORDS.some(w => 
+        str === w || 
+        str.includes("おまち") || 
+        str.includes("お待ち") || 
+        str.includes("複合") || 
+        str.includes("特定日") ||
+        str.includes("イベント")
+      );
+      return isOnlySymbol || isDatePattern || isIgnoreWord;
     }
 
     function showResults(response) {
@@ -531,22 +609,45 @@
       var layout = response.mapLayout;
       var mergeList = response.mergeList || [];
 
-      var maxRows = layout.length;
-      var maxCols = layout[0] ? layout[0].length : 0;
+      var rawRows = layout.length;
+      var rawCols = layout[0] ? layout[0].length : 0;
 
-      gridMap.style.gridTemplateColumns = 'repeat(' + maxCols + ', 30px)';
-      gridMap.style.gridTemplateRows = 'repeat(' + maxRows + ', 24px)';
+      // 有効領域（空セル切り詰め）を検知
+      var minR = rawRows, maxR = -1, minC = rawCols, maxC = -1;
+
+      for (var r = 0; r < rawRows; r++) {
+        for (var c = 0; c < rawCols; c++) {
+          var val = layout[r][c] !== undefined && layout[r][c] !== null ? String(layout[r][c]).trim() : "";
+          if (!isInvalidContent(val)) {
+            if (r < minR) minR = r;
+            if (r > maxR) maxR = r;
+            if (c < minC) minC = c;
+            if (c > maxC) maxC = c;
+          }
+        }
+      }
+
+      if (minR > maxR || minC > maxC) {
+        minR = 0; maxR = rawRows - 1;
+        minC = 0; maxC = rawCols - 1;
+      }
+
+      var activeRows = maxR - minR + 1;
+      var activeCols = maxC - minC + 1;
+
+      gridMap.style.gridTemplateColumns = 'repeat(' + activeCols + ', 30px)';
+      gridMap.style.gridTemplateRows = 'repeat(' + activeRows + ', 24px)';
 
       var mergeMap = {};
-      var skipMatrix = Array.from({ length: maxRows }, function() {
-        return new Array(maxCols).fill(false);
+      var skipMatrix = Array.from({ length: rawRows }, function() {
+        return new Array(rawCols).fill(false);
       });
 
       mergeList.forEach(function(m) {
-        if (m.row < maxRows && m.col < maxCols) {
+        if (m.row < rawRows && m.col < rawCols) {
           mergeMap[m.row + "_" + m.col] = m;
-          for (var r = m.row; r < Math.min(m.row + m.numRows, maxRows); r++) {
-            for (var c = m.col; c < Math.min(m.col + m.numCols, maxCols); c++) {
+          for (var r = m.row; r < Math.min(m.row + m.numRows, rawRows); r++) {
+            for (var c = m.col; c < Math.min(m.col + m.numCols, rawCols); c++) {
               if (r !== m.row || c !== m.col) {
                 skipMatrix[r][c] = true;
               }
@@ -556,15 +657,15 @@
       });
 
       function getVal(r, c) {
-        if (r < 0 || r >= maxRows || c < 0 || c >= maxCols) return "";
+        if (r < 0 || r >= rawRows || c < 0 || c >= rawCols) return "";
         var val = layout[r][c];
         return val !== undefined && val !== null ? String(val).trim() : "";
       }
 
       var htmlBuilder = '';
 
-      for (var r = 0; r < maxRows; r++) {
-        for (var c = 0; c < maxCols; c++) {
+      for (var r = minR; r <= maxR; r++) {
+        for (var c = minC; c <= maxC; c++) {
           if (skipMatrix[r][c]) continue;
 
           var cellValue = getVal(r, c);
@@ -588,18 +689,7 @@
             }
           }
 
-          var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜]+$/.test(cellValue);
-          var isDatePattern = /^(20\d{2}|2\d)[\/\-\.\s年]\d{1,2}([\/\-\.\s月][a-zA-Z0-9]{1,2}日?)?$/.test(cellValue) ||
-                              /^\d{4}-\d{2}-[a-zA-Z0-9]{1,2}$/.test(cellValue) ||
-                              /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(cellValue);
-
-          var isTopLeftDateArea = (r <= 2 && c <= 2) && (isDatePattern || cellValue.toLowerCase().includes('202') || cellValue.includes('年') || cellValue.includes('月') || cellValue.includes('日'));
-
-          if (cellValue === "" || 
-              IGNORE_HEADER_WORDS.includes(cellValue) || 
-              isDatePattern ||
-              isTopLeftDateArea ||
-              isOnlySymbol) {
+          if (isInvalidContent(cellValue)) {
             htmlBuilder += '<div class="grid-cell cell-empty" style="' + spanStyle + '"></div>';
             continue;
           }
