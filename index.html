@@ -56,7 +56,7 @@
     .filter-item select { 
       width: 100%; 
       max-width: 100%;
-      min-width: 0; /* フレックスアイテム配下での突き抜け防止 */
+      min-width: 0;
       height: 38px;
       padding: 0 10px; 
       box-sizing: border-box; 
@@ -66,13 +66,6 @@
       background-color: #fff;
       color: #1e293b;
       transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    /* 日付入力欄（input[type="date"]）のはみ出し防止調整 */
-    .filter-item input[type="date"] {
-      -webkit-appearance: none;
-      appearance: none;
-      position: relative;
     }
 
     .filter-item input:focus, 
@@ -193,14 +186,27 @@
 
     @media (max-width: 768px) {
       body { padding: 10px; }
-      .container { padding: 15px; }
+      .container { padding: 12px; }
       .filter-card { padding: 12px; }
       .filter-group { gap: 10px; }
+      
       .filter-item { 
         min-width: 0; 
         flex: 1 1 100%; 
         width: 100%;
       }
+
+      /* 日付項目をスマホ表示で2列横並びにしてピッタリ収める */
+      .filter-item-date {
+        flex: 1 1 calc(50% - 5px);
+        width: calc(50% - 5px);
+      }
+
+      .filter-item input[type="date"] {
+        font-size: 11px;
+        padding: 0 4px;
+      }
+
       .btn-container { min-width: 0; flex: 1 1 100%; width: 100%; }
 
       /* SP表示での1マスの位置揃えを強制（左揃え・上揃え） */
@@ -223,11 +229,11 @@
     
     <div class="filter-card">
       <div class="filter-group">
-        <div class="filter-item">
+        <div class="filter-item filter-item-date">
           <label>開始日</label>
           <input type="date" id="startDate">
         </div>
-        <div class="filter-item">
+        <div class="filter-item filter-item-date">
           <label>終了日</label>
           <input type="date" id="endDate">
         </div>
