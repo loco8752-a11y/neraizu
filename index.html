@@ -45,13 +45,11 @@
     tr:nth-child(even) { background-color: #f9f9f9; }
     .rate-cell { font-weight: bold; color: var(--main-red); }
 
-    .map-scroll-container { width: 100%; overflow-x: auto; background: #fff; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; }
+    .map-scroll-container { width: 100%; overflow: auto; background: #fff; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; max-height: 80vh; }
     
-    /* 61列×55行のCSS Grid基本設定 */
+    /* CSS Grid基本設定 */
     .grid-map { 
       display: grid; 
-      grid-template-columns: repeat(61, 30px); 
-      grid-template-rows: repeat(55, 24px); 
       gap: 1px; 
       background-color: #e0e0e0; 
       width: max-content; 
@@ -74,7 +72,7 @@
     .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
     .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
     
-    /* 機種名ラベル用スタイル（結合セルに対応して中央揃え＆1行表示） */
+    /* 機種名ラベル用スタイル */
     .cell-text-label { 
       background-color: #f0f0f0 !important; 
       color: #1a1a1a !important; 
@@ -84,7 +82,15 @@
       justify-content: center; 
       text-align: center;
       white-space: nowrap !important;
+      word-break: break-all;
     }
+    /* 縦書き用CSS */
+    .vertical-text {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 1px;
+    }
+
     .cell-empty { background-color: #ffffff !important; border: none !important; }
 
     @media (max-width: 768px) {
@@ -265,7 +271,7 @@
 
     function showResults(response) {
       document.getElementById('loading').style.display = 'none';
-      if (!response || !response.tableData) {
+      if (!response || !response.mapLayout) {
         alert('エラー：島図データが取得できませんでした。');
         return;
       }
@@ -275,19 +281,21 @@
       var tbody = document.getElementById('resultBody');
       tbody.innerHTML = '';
       
-      response.tableData.forEach(function(row) {
-        if (!row || row[0] === "" || row[0] === "台番号") return;
-        var machineId = String(row[0]).trim();
-        var sCount = Number(row[1]) || 0;
-        var days = Number(row[2]) || 0;
-        var rate = days > 0 ? (sCount / days) : 0;
-        
-        rateMap[machineId] = rate;
-        
-        var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + machineId + '</td><td>' + sCount + '回</td><td>' + days + '日</td><td class="rate-cell">' + (rate * 100).toFixed(1) + '%</td>';
-        tbody.appendChild(tr);
-      });
+      if (response.tableData) {
+        response.tableData.forEach(function(row) {
+          if (!row || row[0] === "" || row[0] === "台番号") return;
+          var machineId = String(row[0]).trim();
+          var sCount = Number(row[1]) || 0;
+          var days = Number(row[2]) || 0;
+          var rate = days > 0 ? (sCount / days) : 0;
+          
+          rateMap[machineId] = rate;
+          
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + machineId + '</td><td>' + sCount + '回</td><td>' + days + '日</td><td class="rate-cell">' + (rate * 100).toFixed(1) + '%</td>';
+          tbody.appendChild(tr);
+        });
+      }
 
       var gridMap = document.getElementById('gridMap');
       gridMap.innerHTML = ''; 
@@ -295,15 +303,13 @@
       var layout = response.mapLayout;
       var mergeList = response.mergeList || [];
 
-      if (!layout || layout.length === 0) {
-        gridMap.innerHTML = '<div style="padding:20px;color:red;">レイアウトデータが存在しません。</div>';
-        return;
-      }
+      var maxRows = layout.length;
+      var maxCols = layout[0] ? layout[0].length : 0;
 
-      var maxRows = Math.min(layout.length, 55);
-      var maxCols = 61;
+      // GRID の動的サイズ設定
+      gridMap.style.gridTemplateColumns = 'repeat(' + maxCols + ', 30px)';
+      gridMap.style.gridTemplateRows = 'repeat(' + maxRows + ', 24px)';
 
-      // 結合セルデータのマッピング
       var mergeMap = {};
       var skipMatrix = Array.from({ length: maxRows }, function() {
         return new Array(maxCols).fill(false);
@@ -312,7 +318,6 @@
       mergeList.forEach(function(m) {
         if (m.row < maxRows && m.col < maxCols) {
           mergeMap[m.row + "_" + m.col] = m;
-          // 結合されているセル（左上以外）を非表示判定
           for (var r = m.row; r < Math.min(m.row + m.numRows, maxRows); r++) {
             for (var c = m.col; c < Math.min(m.col + m.numCols, maxCols); c++) {
               if (r !== m.row || c !== m.col) {
@@ -338,10 +343,15 @@
           var cellValue = getVal(r, c);
           var mergeInfo = mergeMap[r + "_" + c];
           
-          // CSS Grid span のみ適用（標準の流れを崩さない）
           var spanStyle = '';
+          var isVertical = false;
+
           if (mergeInfo) {
             spanStyle = 'grid-column: span ' + mergeInfo.numCols + '; grid-row: span ' + mergeInfo.numRows + ';';
+            // 縦方向への結合（Rows > Cols）なら縦書きフラグON
+            if (mergeInfo.numRows > mergeInfo.numCols) {
+              isVertical = true;
+            }
           }
 
           if (cellValue === "") {
@@ -390,8 +400,9 @@
             }
           } 
           else {
-            // 機種名ラベル
-            htmlBuilder += '<div class="grid-cell cell-text-label" style="' + spanStyle + '" title="' + cellValue + '">' + cellValue + '</div>';
+            // 機種名ラベル（縦結合の場合は vertical-text クラスを付与）
+            var vertClass = isVertical ? ' vertical-text' : '';
+            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + '" style="' + spanStyle + '" title="' + cellValue + '">' + cellValue + '</div>';
           }
         }
       }
