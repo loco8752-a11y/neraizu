@@ -72,7 +72,7 @@
     .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
     .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
     
-    /* 機種名ラベル用スタイル（1マスも含め基本すべて左揃え） */
+    /* 機種名ラベル用基本スタイル */
     .cell-text-label { 
       background-color: #f0f0f0 !important; 
       color: #1a1a1a !important; 
@@ -81,8 +81,8 @@
       border: 1px solid #ccc; 
       display: flex;
       align-items: center;
-      justify-content: flex-start !important; /* ★ 1マス・複数マス問わず常に左揃え（はみ出し時に頭文字を維持） */
-      text-align: left !important;
+      justify-content: center; /* デフォルト（結合セル）は中央揃え */
+      text-align: center;
       white-space: nowrap !important;
       overflow: hidden; 
       text-overflow: ellipsis; 
@@ -92,14 +92,26 @@
       line-height: 1.1;
     }
 
-    /* 縦書き用CSS（上揃え） */
+    /* 1マス専用スタイル：横書きは左揃え */
+    .cell-single-cell {
+      justify-content: flex-start !important;
+      text-align: left !important;
+    }
+
+    /* 縦書き用CSS */
     .vertical-text {
       writing-mode: vertical-rl;
       text-orientation: upright;
       letter-spacing: -0.5px;
       font-size: 8px;
-      justify-content: flex-start !important; /* ★ 縦書きは上揃え */
       align-items: center;
+      justify-content: center; /* 結合セルの縦書きは中央揃え */
+      text-align: center;
+    }
+
+    /* 1マス専用スタイル：縦書きは上揃え */
+    .vertical-text.cell-single-cell {
+      justify-content: flex-start !important;
       text-align: start !important;
     }
 
@@ -357,11 +369,15 @@
           
           var spanStyle = '';
           var isVertical = false;
+          var isMerged = false;
 
           if (mergeInfo) {
             spanStyle = 'grid-column: span ' + mergeInfo.numCols + '; grid-row: span ' + mergeInfo.numRows + ';';
             if (mergeInfo.numRows > mergeInfo.numCols) {
               isVertical = true;
+            }
+            if (mergeInfo.numCols > 1 || mergeInfo.numRows > 1) {
+              isMerged = true;
             }
           }
 
@@ -413,6 +429,8 @@
           else {
             // 機種名ラベル
             var vertClass = isVertical ? ' vertical-text' : '';
+            // 1マス（セル結合なし）の場合のみ専用の寄せクラスを付与
+            var singleClass = (!isMerged) ? ' cell-single-cell' : '';
             
             // 文字数に応じてフォントサイズ調整
             var len = cellValue.length;
@@ -423,7 +441,7 @@
               customFontSize = '7.5px';
             }
 
-            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + '" style="' + spanStyle + ' font-size: ' + customFontSize + ';" title="' + cellValue + '">' + cellValue + '</div>';
+            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + singleClass + '" style="' + spanStyle + ' font-size: ' + customFontSize + ';" title="' + cellValue + '">' + cellValue + '</div>';
           }
         }
       }
