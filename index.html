@@ -46,16 +46,36 @@
     .rate-cell { font-weight: bold; color: var(--main-red); }
 
     .map-scroll-container { width: 100%; overflow-x: auto; background: #fff; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; }
-    .grid-map { display: grid; grid-template-columns: repeat(61, 30px); grid-template-rows: repeat(55, 24px); gap: 1px; background-color: #e0e0e0; width: max-content; }
     
-    .grid-cell { font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: bold; user-select: none; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 1px; }
+    /* Gridレイアウト修正：基本セル幅を30px固定から1frに変更 */
+    .grid-map { 
+      display: grid; 
+      grid-template-columns: repeat(61, 30px); 
+      grid-auto-rows: 24px; 
+      gap: 1px; 
+      background-color: #e0e0e0; 
+      width: max-content; 
+    }
+    
+    .grid-cell { 
+      font-size: 9px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: bold; 
+      user-select: none; 
+      box-sizing: border-box; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      padding: 0 2px; 
+    }
     .grid-cell:hover { outline: 2px solid var(--accent-orange); cursor: crosshair; z-index: 10; }
     .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
     .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
-    .cell-text-label { background-color: #f0f0f0 !important; color: #1a1a1a !important; font-weight: bold; font-size: 8px; border: 1px solid #ccc; }
+    .cell-text-label { background-color: #f0f0f0 !important; color: #1a1a1a !important; font-weight: bold; font-size: 9px; border: 1px solid #ccc; justify-content: flex-start; padding-left: 4px; }
     .cell-empty { background-color: #ffffff !important; border: none !important; }
 
-    /* スマートフォン向けのレスポンシブ対応 */
     @media (max-width: 768px) {
       .filter-group { grid-template-columns: 1fr !important; gap: 10px; padding: 10px; }
       .filter-group > div { width: 100% !important; box-sizing: border-box !important; }
@@ -74,7 +94,6 @@
          alt="ネライズ-スロット島図分析ツール" 
          style="height: 100px; width: auto; display: block; margin-bottom: 10px;">
     
-    <!-- 条件選択エリア -->
     <div class="filter-group">
       <div>
         <label>開始日</label>
@@ -105,21 +124,18 @@
     <button onclick="executeAnalysis()">分析を実行</button>
     <div id="loading">⏳ データを集計中...（数秒かかります）</div>
     
-    <!-- 結果表示エリア -->
     <div id="outputArea" style="display:none;">
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('mapTab', this)">🗺️ 島図ヒートマップ</button>
         <button class="tab-btn" onclick="switchTab('listTab', this)">📋 データ一覧リスト</button>
       </div>
 
-      <!-- タブ1: 島図ヒートマップ -->
       <div id="mapTab" class="tab-content active">
         <div class="map-scroll-container">
           <div id="gridMap" class="grid-map"></div>
         </div>
       </div>
 
-      <!-- タブ2: データ一覧リスト -->
       <div id="listTab" class="tab-content">
         <table id="resultTable">
           <thead>
@@ -276,7 +292,7 @@
       var maxRows = Math.min(layout.length, 55);
       var maxCols = 61;
 
-      // 結合セル情報のマッピングとスキップ判定配列の生成
+      // 結合セルマッピング
       var mergeMap = {};
       var skipMatrix = Array.from({ length: maxRows }, function() {
         return new Array(maxCols).fill(false);
@@ -285,7 +301,6 @@
       mergeList.forEach(function(m) {
         if (m.row < maxRows && m.col < maxCols) {
           mergeMap[m.row + "_" + m.col] = m;
-          // 結合範囲に含まれる「左上以外」のセルをスキップ設定
           for (var r = m.row; r < Math.min(m.row + m.numRows, maxRows); r++) {
             for (var c = m.col; c < Math.min(m.col + m.numCols, maxCols); c++) {
               if (r !== m.row || c !== m.col) {
@@ -306,27 +321,24 @@
 
       for (var r = 0; r < maxRows; r++) {
         for (var c = 0; c < maxCols; c++) {
-          // 結合セルに包摂される従属セルは描画をスキップ
           if (skipMatrix[r][c]) continue;
 
           var cellValue = getVal(r, c);
           var mergeInfo = mergeMap[r + "_" + c];
           
-          // CSS Gridでセル結合を表現するためのspanスタイル
-          var spanStyle = '';
+          // CSS Gridで位置と長さを明示指定（1始まりの座標）
+          var gridPosStyle = 'grid-column-start: ' + (c + 1) + '; grid-row-start: ' + (r + 1) + ';';
           if (mergeInfo) {
-            spanStyle = 'grid-column: span ' + mergeInfo.numCols + '; grid-row: span ' + mergeInfo.numRows + ';';
+            gridPosStyle += ' grid-column-end: span ' + mergeInfo.numCols + '; grid-row-end: span ' + mergeInfo.numRows + ';';
           }
 
           if (cellValue === "") {
-            htmlBuilder += '<div class="grid-cell cell-empty" style="' + spanStyle + '"></div>';
+            htmlBuilder += '<div class="grid-cell cell-empty" style="' + gridPosStyle + '"></div>';
             continue;
           }
 
-          // 1. 台番号セル判定
           var isMachine = (rateMap[cellValue] !== undefined);
           
-          // 2. 確率表示セル判定
           var matchedMachineId = "";
           if (!isMachine) {
             var searchOffsets = [
@@ -346,14 +358,13 @@
           }
           var isRateCell = (matchedMachineId !== "");
 
-          // 3. セル描画
           if (isMachine) {
             var rate = rateMap[cellValue];
             var color = getColorHex(rate);
             if (color) {
-              htmlBuilder += '<div class="grid-cell" style="' + spanStyle + ' background-color: ' + color + '; color: #ffffff;" title="台: ' + cellValue + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + cellValue + '</div>';
+              htmlBuilder += '<div class="grid-cell" style="' + gridPosStyle + ' background-color: ' + color + '; color: #ffffff;" title="台: ' + cellValue + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + cellValue + '</div>';
             } else {
-              htmlBuilder += '<div class="grid-cell cell-machine-default" style="' + spanStyle + '" title="台: ' + cellValue + '\n確率: 0.0%">' + cellValue + '</div>';
+              htmlBuilder += '<div class="grid-cell cell-machine-default" style="' + gridPosStyle + '" title="台: ' + cellValue + '\n確率: 0.0%">' + cellValue + '</div>';
             }
           } 
           else if (isRateCell) {
@@ -361,14 +372,14 @@
             var color = getColorHex(rate);
             var displayPercent = rate !== undefined ? (rate * 100).toFixed(0) + "%" : cellValue;
             if (color) {
-              htmlBuilder += '<div class="grid-cell" style="' + spanStyle + ' background-color: #ffffff; color: ' + color + ';" title="台: ' + matchedMachineId + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + displayPercent + '</div>';
+              htmlBuilder += '<div class="grid-cell" style="' + gridPosStyle + ' background-color: #ffffff; color: ' + color + ';" title="台: ' + matchedMachineId + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + displayPercent + '</div>';
             } else {
-              htmlBuilder += '<div class="grid-cell cell-rate-default" style="' + spanStyle + '" title="台: ' + matchedMachineId + '\n確率: 0.0%">' + displayPercent + '</div>';
+              htmlBuilder += '<div class="grid-cell cell-rate-default" style="' + gridPosStyle + '" title="台: ' + matchedMachineId + '\n確率: 0.0%">' + displayPercent + '</div>';
             }
           } 
           else {
-            // 機種名ラベル（結合された全幅・全高に広げて表示）
-            htmlBuilder += '<div class="grid-cell cell-text-label" style="' + spanStyle + '" title="' + cellValue + '">' + cellValue + '</div>';
+            // 機種名ラベル（結合位置・幅に合わせて描画）
+            htmlBuilder += '<div class="grid-cell cell-text-label" style="' + gridPosStyle + '" title="' + cellValue + '">' + cellValue + '</div>';
           }
         }
       }
