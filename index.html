@@ -194,35 +194,32 @@
 
     .cell-empty { background-color: #ffffff !important; border: none !important; }
 
+    /* スマホ表示（1列縦並び設定） */
     @media (max-width: 768px) {
       body { padding: 10px; }
       .container { padding: 12px; }
       .filter-card { padding: 12px; }
-      .filter-group { gap: 10px 0; } /* 縦ギャップ10px、横ギャップは個別に制御 */
       
-      .filter-item { 
-        min-width: 0; 
-        flex: 1 1 100%; 
-        width: 100%;
+      .filter-group { 
+        display: flex;
+        flex-direction: column;
+        gap: 12px; 
+        align-items: stretch;
+      }
+      
+      .filter-item,
+      .filter-item-date,
+      .btn-container { 
+        min-width: 0 !important; 
+        width: 100% !important;
+        flex: none !important;
+        margin: 0 !important;
       }
 
-      /* 日付項目：横並び（各幅 calc(50% - 5px)）で右側の「開始日」だけに右マージン10px */
-      .filter-item-date {
-        flex: 0 0 calc(50% - 5px) !important;
-        width: calc(50% - 5px) !important;
-        min-width: 0 !important;
+      .filter-item input, 
+      .filter-item select {
+        font-size: 14px; /* スマホで押しやすいサイズ */
       }
-
-      .filter-item-date:first-child {
-        margin-right: 10px;
-      }
-
-      .filter-item input[type="date"] {
-        font-size: 11px;
-        padding: 0 4px;
-      }
-
-      .btn-container { min-width: 0; flex: 1 1 100%; width: 100%; margin-top: 5px; }
 
       /* SP表示での1マスの位置揃えを強制（左揃え・上揃え） */
       .cell-text-label.cell-single-cell {
@@ -374,12 +371,23 @@
     }
 
     function executeAnalysis() {
+      var startDateVal = document.getElementById('startDate').value;
+      var endDateVal = document.getElementById('endDate').value;
+
+      // 日付チェック：両方選択されている場合、終了日が開始日より前ならエラー
+      if (startDateVal && endDateVal) {
+        if (new Date(startDateVal) > new Date(endDateVal)) {
+          alert('エラー: 終了日は開始日以降の日付を指定してください。');
+          return;
+        }
+      }
+
       document.getElementById('loading').style.display = 'block';
       document.getElementById('outputArea').style.display = 'none';
       
       var conditions = {
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
+        startDate: startDateVal,
+        endDate: endDateVal,
         b3: document.getElementById('b3').value,
         b4: document.getElementById('b4').value,
         b5: document.getElementById('b5').value
