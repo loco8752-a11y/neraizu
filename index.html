@@ -55,6 +55,8 @@
     .filter-item input, 
     .filter-item select { 
       width: 100%; 
+      max-width: 100%;
+      min-width: 0; /* フレックスアイテム配下での突き抜け防止 */
       height: 38px;
       padding: 0 10px; 
       box-sizing: border-box; 
@@ -64,6 +66,13 @@
       background-color: #fff;
       color: #1e293b;
       transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    /* 日付入力欄（input[type="date"]）のはみ出し防止調整 */
+    .filter-item input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
+      position: relative;
     }
 
     .filter-item input:focus, 
@@ -187,10 +196,14 @@
       .container { padding: 15px; }
       .filter-card { padding: 12px; }
       .filter-group { gap: 10px; }
-      .filter-item { min-width: 100%; flex: 1 1 100%; }
-      .btn-container { min-width: 100%; flex: 1 1 100%; }
+      .filter-item { 
+        min-width: 0; 
+        flex: 1 1 100%; 
+        width: 100%;
+      }
+      .btn-container { min-width: 0; flex: 1 1 100%; width: 100%; }
 
-      /* SP表示でも1マスの位置揃えを強制（左揃え・上揃え） */
+      /* SP表示での1マスの位置揃えを強制（左揃え・上揃え） */
       .cell-text-label.cell-single-cell {
         justify-content: flex-start !important;
         text-align: left !important;
