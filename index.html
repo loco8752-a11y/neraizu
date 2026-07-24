@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="ネライズ">
   
   <style>
-    /* 全要素でサイズ計算を共通化（枠線やパディングを含めた幅にする） */
+    /* 全要素のサイズ計算を枠線・内側余白込みに統一 */
     *, *::before, *::after {
       box-sizing: border-box;
     }
@@ -43,13 +43,13 @@
       padding: 16px 20px;
       margin-bottom: 20px;
       width: 100%;
-      overflow: hidden; /* 万が一のはみ出しを確実に防止 */
+      overflow: hidden; /* はみ出しを完全に防止 */
     }
 
     .filter-group { 
       display: flex; 
       flex-wrap: wrap; 
-      gap: 12px 15px; 
+      gap: 12px 10px; 
       align-items: flex-end; 
       width: 100%;
     }
@@ -57,9 +57,8 @@
     .filter-item {
       display: flex;
       flex-direction: column;
-      flex: 1 1 150px; /* 自動伸縮 */
-      min-width: 0;    /* フレックスアイテムのはみ出しを強力に抑止 */
-      width: 100%;
+      flex: 1 1 120px; /* 横幅に応じて柔軟に伸縮 */
+      min-width: 0;    /* 親要素からはみ出さないよう限界まで縮小許可 */
     }
 
     .filter-item label { 
@@ -76,14 +75,14 @@
       max-width: 100% !important;
       min-width: 0 !important;
       height: 38px;
-      padding: 0 10px; 
+      padding: 0 8px; 
       border: 1px solid #cbd5e1; 
       border-radius: 6px; 
       font-size: 13px;
       background-color: #fff;
       color: #1e293b;
       transition: border-color 0.2s, box-shadow 0.2s;
-      -webkit-appearance: none; /* iOS/Safariでの表示崩れ防止 */
+      -webkit-appearance: none;
       appearance: none;
     }
 
@@ -91,8 +90,8 @@
     .filter-item select {
       background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%20475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
       background-repeat: no-repeat;
-      background-position: right 10px center;
-      padding-right: 28px;
+      background-position: right 8px center;
+      padding-right: 24px;
     }
 
     .filter-item input:focus, 
@@ -103,9 +102,8 @@
     }
 
     .btn-container {
-      flex: 1 1 150px;
+      flex: 1 1 130px;
       min-width: 0;
-      width: 100%;
     }
 
     button { 
@@ -122,6 +120,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      white-space: nowrap;
     }
 
     button:hover { background: var(--main-red); }
@@ -196,7 +195,7 @@
       line-height: 1.1;
     }
 
-    /* 1マス（結合なし）のみ：横書きは左揃え (!importantでSP上書き防止) */
+    /* 1マス（結合なし）のみ：横書きは左揃え */
     .cell-single-cell {
       justify-content: flex-start !important;
       text-align: left !important;
@@ -213,7 +212,7 @@
       text-align: center !important;
     }
 
-    /* 1マス（結合なし）のみ：縦書きは上揃え (!importantでSP上書き防止) */
+    /* 1マス（結合なし）のみ：縦書きは上揃え */
     .vertical-text.cell-single-cell {
       justify-content: flex-start !important;
       text-align: start !important;
@@ -232,21 +231,35 @@
         flex-direction: column;
         gap: 12px; 
         align-items: stretch;
+        width: 100% !important;
       }
       
       .filter-item,
       .btn-container { 
         width: 100% !important;
+        max-width: 100% !important;
         flex: none !important;
         margin: 0 !important;
       }
 
+      /* SP特有のdate入力欄のはみ出し対策 */
+      .filter-item input[type="date"],
       .filter-item input, 
       .filter-item select {
-        font-size: 14px; /* スマホで押しやすいサイズ */
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        font-size: 14px;
+        padding: 0 6px !important;
       }
 
-      /* SP表示での1マスの位置揃えを強制（左揃え・上揃え） */
+      /* カレンダーアイコン等による崩れ防止 */
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        margin-left: 0;
+        padding: 0;
+      }
+
       .cell-text-label.cell-single-cell {
         justify-content: flex-start !important;
         text-align: left !important;
