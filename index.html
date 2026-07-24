@@ -746,12 +746,36 @@
               customFontSize = '7.5px';
             }
 
-            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + singleClass + '" style="' + spanStyle + ' font-size: ' + customFontSize + ';" title="' + cellValue + '">' + cellValue + '</div>';
+            // 🎯 周囲の台番号（1605〜1616）または特定キーワードが含まれる場合のみ上揃えを適用
+            var alignStyle = '';
+            var isTargetRange = false;
+
+            // 周囲（上下左右2セル）に 1605 〜 1616 の台番号が存在するか検索
+            var searchOffsetsTarget = [
+              {dr: -1, dc:  0}, {dr:  1, dc:  0}, {dr:  0, dc: -1}, {dr:  0, dc:  1},
+              {dr: -2, dc:  0}, {dr:  2, dc:  0}, {dr:  0, dc: -2}, {dr:  0, dc:  2}
+            ];
+            for (var k = 0; k < searchOffsetsTarget.length; k++) {
+              var off = searchOffsetsTarget[k];
+              var nearVal = Number(getVal(r + off.dr, c + off.dc));
+              if (nearVal >= 1605 && nearVal <= 1616) {
+                isTargetRange = true;
+                break;
+              }
+            }
+
+            // 1605〜1616の範囲または特定キーワードの場合に上揃えを設定
+            if (isTargetRange || cellValue.includes('ムテキ') || cellValue.includes('GOLF')) {
+              alignStyle = 'justify-content: flex-start !important; text-align: start !important; padding-top: 4px;';
+            }
+
+            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + singleClass + '" style="' + spanStyle + ' font-size: ' + customFontSize + '; ' + alignStyle + '" title="' + cellValue + '">' + cellValue + '</div>';
           }
         }
       }
       gridMap.innerHTML = htmlBuilder;
     }
   </script>
+
 </body>
 </html>
