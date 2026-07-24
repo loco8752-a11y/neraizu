@@ -374,9 +374,9 @@
       var startDateVal = document.getElementById('startDate').value;
       var endDateVal = document.getElementById('endDate').value;
 
-      // 日付チェック：両方選択されている場合、終了日が開始日より前ならエラー
+      // 日付チェック：文字列比較（YYYY-MM-DD 形式）で確実に判定
       if (startDateVal && endDateVal) {
-        if (new Date(startDateVal) > new Date(endDateVal)) {
+        if (startDateVal > endDateVal) {
           alert('エラー: 終了日は開始日以降の日付を指定してください。');
           return;
         }
