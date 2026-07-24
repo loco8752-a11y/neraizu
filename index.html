@@ -72,23 +72,32 @@
     .cell-machine-default { background-color: #d9d9d9 !important; color: #000000 !important; }
     .cell-rate-default { background-color: #ffffff !important; color: #000000 !important; }
     
-    /* 機種名ラベル用スタイル */
+    /* 機種名ラベル用スタイル（文字あふれ防止・最適化） */
     .cell-text-label { 
       background-color: #f0f0f0 !important; 
       color: #1a1a1a !important; 
       font-weight: bold; 
-      font-size: 9px; 
+      font-size: 8px; 
       border: 1px solid #ccc; 
-      justify-content: center; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-align: center;
       white-space: nowrap !important;
-      word-break: break-all;
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      word-break: keep-all;
+      box-sizing: border-box;
+      padding: 1px;
+      line-height: 1.1;
     }
-    /* 縦書き用CSS */
+
+    /* 縦書き用CSS（詰めて配置） */
     .vertical-text {
       writing-mode: vertical-rl;
       text-orientation: upright;
-      letter-spacing: 1px;
+      letter-spacing: -0.5px;
+      font-size: 8px;
     }
 
     .cell-empty { background-color: #ffffff !important; border: none !important; }
@@ -402,7 +411,17 @@
           else {
             // 機種名ラベル（縦結合の場合は vertical-text クラスを付与）
             var vertClass = isVertical ? ' vertical-text' : '';
-            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + '" style="' + spanStyle + '" title="' + cellValue + '">' + cellValue + '</div>';
+            
+            // ★ 文字数に応じてフォントサイズを動的に最適化
+            var len = cellValue.length;
+            var customFontSize = '8px';
+            if (len > 12) {
+              customFontSize = '6.5px';
+            } else if (len > 8) {
+              customFontSize = '7.5px';
+            }
+
+            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + '" style="' + spanStyle + ' font-size: ' + customFontSize + ';" title="' + cellValue + '">' + cellValue + '</div>';
           }
         }
       }
