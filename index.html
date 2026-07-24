@@ -296,10 +296,13 @@
       text-align: start !important;
     }
 
+    /* 空セルは背景・枠・影を排除して非表示にする */
     .cell-empty { 
       background-color: transparent !important; 
       border: none !important; 
       box-shadow: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
 
     @media (max-width: 768px) {
@@ -337,6 +340,11 @@
       input[type="date"]::-webkit-calendar-picker-indicator {
         margin-left: 0;
         padding: 0;
+      }
+
+      .grid-map {
+        margin: 0 !important;
+        padding: 0 !important;
       }
     }
   </style>
@@ -426,8 +434,8 @@
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
     
-    // 消去対象の見出し・選択値・システム用文字リスト
-    const IGNORE_HEADER_WORDS = [
+    // 完全一致で無効（非表示）とみなす単語リスト
+    const EXACT_IGNORE_WORDS = [
       "開始日", "終了日", "特定日", "複合イベント", "曜日", "日付", "イベント", 
       "条件", "検索条件", "期間", "対象期間", "すべて", "通常", "-", "おまち", "お待ち",
       "日", "月", "火", "水", "木", "金", "土",
@@ -481,7 +489,6 @@
       })
       .catch(err => console.error("プルダウン取得失敗:", err));
 
-      // スクロール時にインジケーターをすっと非表示にする処理
       var mapContainer = document.getElementById('mapScrollContainer');
       var scrollHint = document.getElementById('scrollHint');
       if (mapContainer && scrollHint) {
@@ -557,22 +564,29 @@
       return null;
     }
 
+    // セルの値が無効（＝空マス）か判定する関数を修正
     function isInvalidContent(cellValue) {
-      if (!cellValue || cellValue.trim() === "") return true;
-      var str = cellValue.trim();
+      if (cellValue === undefined || cellValue === null) return true;
+      var str = String(cellValue).trim();
+      if (str === "" || str === "-" || str === "undefined") return true;
+
+      // 記号のみ
       var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜・]+$/.test(str);
+      if (isOnlySymbol) return true;
+
+      // 日付形式
       var isDatePattern = /^(20\d{2}|2\d)[\/\-\.\s年]\d{1,2}([\/\-\.\s月][a-zA-Z0-9]{1,2}日?)?$/.test(str) ||
                           /^\d{4}-\d{2}-[a-zA-Z0-9]{1,2}$/.test(str) ||
                           /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(str);
-      var isIgnoreWord = IGNORE_HEADER_WORDS.some(w => 
-        str === w || 
-        str.includes("おまち") || 
-        str.includes("お待ち") || 
-        str.includes("複合") || 
-        str.includes("特定日") ||
-        str.includes("イベント")
-      );
-      return isOnlySymbol || isDatePattern || isIgnoreWord;
+      if (isDatePattern) return true;
+
+      // 特定のシステム除外キーワード（完全一致）
+      if (EXACT_IGNORE_WORDS.indexOf(str) !== -1) return true;
+
+      // お待ち・システム文字列が含まれる場合のみ部分一致で除外
+      if (str.indexOf("おまち") !== -1 || str.indexOf("お待ち") !== -1) return true;
+
+      return false;
     }
 
     function showResults(response) {
@@ -746,11 +760,9 @@
               customFontSize = '7.5px';
             }
 
-            // 🎯 周囲の台番号（1605〜1616）または特定キーワードが含まれる場合のみ上揃えを適用
             var alignStyle = '';
             var isTargetRange = false;
 
-            // 周囲（上下左右2セル）に 1605 〜 1616 の台番号が存在するか検索
             var searchOffsetsTarget = [
               {dr: -1, dc:  0}, {dr:  1, dc:  0}, {dr:  0, dc: -1}, {dr:  0, dc:  1},
               {dr: -2, dc:  0}, {dr:  2, dc:  0}, {dr:  0, dc: -2}, {dr:  0, dc:  2}
@@ -764,7 +776,6 @@
               }
             }
 
-            // 1605〜1616の範囲または特定キーワードの場合に上揃えを設定
             if (isTargetRange || cellValue.includes('ムテキ') || cellValue.includes('GOLF')) {
               alignStyle = 'justify-content: flex-start !important; text-align: start !important; padding-top: 4px;';
             }
