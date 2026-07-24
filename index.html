@@ -157,7 +157,7 @@
       line-height: 1.1;
     }
 
-    /* 1マス（結合なし）のみ：横書きは左揃え */
+    /* 1マス（結合なし）のみ：横書きは左揃え (!importantでSP上書き防止) */
     .cell-single-cell {
       justify-content: flex-start !important;
       text-align: left !important;
@@ -174,7 +174,7 @@
       text-align: center !important;
     }
 
-    /* 1マス（結合なし）のみ：縦書きは上揃え */
+    /* 1マス（結合なし）のみ：縦書きは上揃え (!importantでSP上書き防止) */
     .vertical-text.cell-single-cell {
       justify-content: flex-start !important;
       text-align: start !important;
@@ -189,6 +189,16 @@
       .filter-group { gap: 10px; }
       .filter-item { min-width: 100%; flex: 1 1 100%; }
       .btn-container { min-width: 100%; flex: 1 1 100%; }
+
+      /* SP表示でも1マスの位置揃えを強制（左揃え・上揃え） */
+      .cell-text-label.cell-single-cell {
+        justify-content: flex-start !important;
+        text-align: left !important;
+      }
+      .vertical-text.cell-single-cell {
+        justify-content: flex-start !important;
+        text-align: start !important;
+      }
     }
   </style>
 </head>
@@ -454,8 +464,14 @@
             }
           }
 
-          // 空セル、またはスプレッドシート左上の管理用ヘッダー文字列（「開始日」「特定日」など）は空セルとして透過表示
-          if (cellValue === "" || IGNORE_HEADER_WORDS.includes(cellValue) || cellValue.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+          // 記号のみ（}, ), ?, ! など）を判定する正規表現
+          var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜]+$/.test(cellValue);
+
+          // 空セル、ヘッダー単語、日付、記号のみセルを除外（透明表示）
+          if (cellValue === "" || 
+              IGNORE_HEADER_WORDS.includes(cellValue) || 
+              cellValue.match(/^\d{4}\/\d{2}\/\d{2}$/) ||
+              isOnlySymbol) {
             htmlBuilder += '<div class="grid-cell cell-empty" style="' + spanStyle + '"></div>';
             continue;
           }
