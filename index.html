@@ -198,7 +198,7 @@
       body { padding: 10px; }
       .container { padding: 12px; }
       .filter-card { padding: 12px; }
-      .filter-group { gap: 10px; }
+      .filter-group { gap: 10px 0; } /* 縦ギャップ10px、横ギャップは個別に制御 */
       
       .filter-item { 
         min-width: 0; 
@@ -206,10 +206,15 @@
         width: 100%;
       }
 
-      /* 日付項目をスマホ表示で隙間（10px）を空けて2列横並びにする */
+      /* 日付項目：横並び（各幅 calc(50% - 5px)）で右側の「開始日」だけに右マージン10px */
       .filter-item-date {
-        flex: 1 1 calc(50% - 5px);
-        width: calc(50% - 5px);
+        flex: 0 0 calc(50% - 5px) !important;
+        width: calc(50% - 5px) !important;
+        min-width: 0 !important;
+      }
+
+      .filter-item-date:first-child {
+        margin-right: 10px;
       }
 
       .filter-item input[type="date"] {
@@ -217,7 +222,7 @@
         padding: 0 4px;
       }
 
-      .btn-container { min-width: 0; flex: 1 1 100%; width: 100%; }
+      .btn-container { min-width: 0; flex: 1 1 100%; width: 100%; margin-top: 5px; }
 
       /* SP表示での1マスの位置揃えを強制（左揃え・上揃え） */
       .cell-text-label.cell-single-cell {
