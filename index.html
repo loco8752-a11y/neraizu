@@ -266,34 +266,67 @@
       gridMap.innerHTML = ''; 
       
       var layout = response.mapLayout;
+      var mergeList = response.mergeList || [];
+
       if (!layout || layout.length === 0) {
         gridMap.innerHTML = '<div style="padding:20px;color:red;">レイアウトデータが存在しません。</div>';
         return;
       }
 
-      var htmlBuilder = '';
       var maxRows = Math.min(layout.length, 55);
       var maxCols = 61;
-      
+
+      // 結合セル情報のマッピングとスキップ判定配列の生成
+      var mergeMap = {};
+      var skipMatrix = Array.from({ length: maxRows }, function() {
+        return new Array(maxCols).fill(false);
+      });
+
+      mergeList.forEach(function(m) {
+        if (m.row < maxRows && m.col < maxCols) {
+          mergeMap[m.row + "_" + m.col] = m;
+          // 結合範囲に含まれる「左上以外」のセルをスキップ設定
+          for (var r = m.row; r < Math.min(m.row + m.numRows, maxRows); r++) {
+            for (var c = m.col; c < Math.min(m.col + m.numCols, maxCols); c++) {
+              if (r !== m.row || c !== m.col) {
+                skipMatrix[r][c] = true;
+              }
+            }
+          }
+        }
+      });
+
       function getVal(r, c) {
         if (r < 0 || r >= maxRows || c < 0 || c >= maxCols) return "";
         var val = layout[r][c];
         return val !== undefined && val !== null ? String(val).trim() : "";
       }
 
+      var htmlBuilder = '';
+
       for (var r = 0; r < maxRows; r++) {
         for (var c = 0; c < maxCols; c++) {
+          // 結合セルに包摂される従属セルは描画をスキップ
+          if (skipMatrix[r][c]) continue;
+
           var cellValue = getVal(r, c);
+          var mergeInfo = mergeMap[r + "_" + c];
           
+          // CSS Gridでセル結合を表現するためのspanスタイル
+          var spanStyle = '';
+          if (mergeInfo) {
+            spanStyle = 'grid-column: span ' + mergeInfo.numCols + '; grid-row: span ' + mergeInfo.numRows + ';';
+          }
+
           if (cellValue === "") {
-            htmlBuilder += '<div class="grid-cell cell-empty"></div>';
+            htmlBuilder += '<div class="grid-cell cell-empty" style="' + spanStyle + '"></div>';
             continue;
           }
 
-          // 1. 台番号セル判定（数値データかつrateMapに存在する）
+          // 1. 台番号セル判定
           var isMachine = (rateMap[cellValue] !== undefined);
           
-          // 2. 確率表示セル判定（近隣に台番号が存在する）
+          // 2. 確率表示セル判定
           var matchedMachineId = "";
           if (!isMachine) {
             var searchOffsets = [
@@ -304,7 +337,6 @@
               var offset = searchOffsets[i];
               var targetVal = getVal(r + offset.dr, c + offset.dc);
               if (targetVal !== "" && rateMap[targetVal] !== undefined) {
-                // セルの中身が％表記か空文字列の場合のみ確率セルと判定
                 if (cellValue.includes("%") || !isNaN(cellValue) || cellValue === "") {
                   matchedMachineId = targetVal;
                   break;
@@ -314,31 +346,29 @@
           }
           var isRateCell = (matchedMachineId !== "");
 
-          // 3. セルの描画切り分け
+          // 3. セル描画
           if (isMachine) {
-            // 台番号セル（ヒートマップカラー適用）
             var rate = rateMap[cellValue];
             var color = getColorHex(rate);
             if (color) {
-              htmlBuilder += '<div class="grid-cell" style="background-color: ' + color + '; color: #ffffff;" title="台: ' + cellValue + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + cellValue + '</div>';
+              htmlBuilder += '<div class="grid-cell" style="' + spanStyle + ' background-color: ' + color + '; color: #ffffff;" title="台: ' + cellValue + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + cellValue + '</div>';
             } else {
-              htmlBuilder += '<div class="grid-cell cell-machine-default" title="台: ' + cellValue + '\n確率: 0.0%">' + cellValue + '</div>';
+              htmlBuilder += '<div class="grid-cell cell-machine-default" style="' + spanStyle + '" title="台: ' + cellValue + '\n確率: 0.0%">' + cellValue + '</div>';
             }
           } 
           else if (isRateCell) {
-            // 確率セル（数値％を表示）
             var rate = rateMap[matchedMachineId];
             var color = getColorHex(rate);
             var displayPercent = rate !== undefined ? (rate * 100).toFixed(0) + "%" : cellValue;
             if (color) {
-              htmlBuilder += '<div class="grid-cell" style="background-color: #ffffff; color: ' + color + ';" title="台: ' + matchedMachineId + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + displayPercent + '</div>';
+              htmlBuilder += '<div class="grid-cell" style="' + spanStyle + ' background-color: #ffffff; color: ' + color + ';" title="台: ' + matchedMachineId + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + displayPercent + '</div>';
             } else {
-              htmlBuilder += '<div class="grid-cell cell-rate-default" title="台: ' + matchedMachineId + '\n確率: 0.0%">' + displayPercent + '</div>';
+              htmlBuilder += '<div class="grid-cell cell-rate-default" style="' + spanStyle + '" title="台: ' + matchedMachineId + '\n確率: 0.0%">' + displayPercent + '</div>';
             }
           } 
           else {
-            // ★【修正ポイント】台番号でも確率セルでもないテキスト ➜ 機種名ラベルとして描画
-            htmlBuilder += '<div class="grid-cell cell-text-label" title="' + cellValue + '">' + cellValue + '</div>';
+            // 機種名ラベル（結合された全幅・全高に広げて表示）
+            htmlBuilder += '<div class="grid-cell cell-text-label" style="' + spanStyle + '" title="' + cellValue + '">' + cellValue + '</div>';
           }
         }
       }
