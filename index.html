@@ -150,19 +150,55 @@
     }
 
     #loading { display: none; text-align: center; font-weight: bold; color: var(--main-red); margin: 20px 0; }
-    
-    .tabs { display: flex; gap: 8px; margin-top: 20px; border-bottom: 2px solid #f1f5f9; }
-    .tab-btn { padding: 10px 22px; background: #f1f5f9; color: #64748b; border: none; cursor: pointer; border-radius: 8px 8px 0 0; font-weight: 700; transition: all 0.2s; }
-    .tab-btn.active { background: var(--main-red); color: white; }
-    .tab-content { display: none; padding-top: 20px; }
-    .tab-content.active { display: block; }
 
-    table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
-    th, td { padding: 12px; text-align: center; border-bottom: 1px solid #e2e8f0; }
-    th { background-color: #0f172a; color: white; font-weight: 600; font-size: 13px; }
-    tr:last-child td { border-bottom: none; }
-    tr:nth-child(even) { background-color: #f8fafc; }
-    .rate-cell { font-weight: bold; color: var(--main-red); }
+    /* 🏷️ タブデザイン */
+    .tabs { 
+      display: flex; 
+      gap: 8px; 
+      border-bottom: 2px solid var(--border-color); 
+      margin-bottom: 0; 
+    }
+    
+    .tab-button { 
+      background: #f1f5f9; 
+      color: #64748b; 
+      border: 1px solid var(--border-color); 
+      border-bottom: none; 
+      padding: 10px 20px; 
+      border-radius: 8px 8px 0 0; 
+      font-size: 14px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      transition: all 0.2s ease; 
+      height: 42px;
+      width: auto;
+    }
+    
+    .tab-button:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .tab-button.active { 
+      background: #ffffff; 
+      color: var(--main-red); 
+      border-top: 3px solid var(--main-red); 
+      border-left: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      margin-bottom: -2px; 
+    }
+
+    .tab-content { 
+      display: none; 
+      background: #ffffff; 
+      border-radius: 0 0 12px 12px;
+    }
+    
+    .tab-content.active { 
+      display: block; 
+    }
 
     /* 🧭 スクロールインジケーター */
     .scroll-hint {
@@ -178,6 +214,7 @@
       letter-spacing: 0.5px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       transition: opacity 0.5s ease;
+      margin-top: 10px;
     }
     
     .scroll-hint-left {
@@ -307,6 +344,35 @@
       pointer-events: none !important;
     }
 
+    /* テーブルデザイン */
+    .table-container { 
+      overflow-x: auto; 
+      padding-top: 10px;
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 13px;
+    }
+    
+    th, td { 
+      padding: 12px 16px; 
+      text-align: left; 
+      border-bottom: 1px solid var(--border-color); 
+    }
+    
+    th { 
+      background-color: #f8fafc; 
+      color: #475569; 
+      font-weight: 700; 
+      white-space: nowrap;
+    }
+
+    tr:hover {
+      background-color: #f1f5f9;
+    }
+
     @media (max-width: 768px) {
       body { padding: 10px; }
       .container { padding: 16px; }
@@ -396,12 +462,14 @@
     
     <div id="loading">⏳ 集計中... 少々お待ちください</div>
     
+    <!-- 結果表示エリア -->
     <div id="outputArea" style="display:none;">
       <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('mapTab', this)">🗺️ 島図ヒートマップ</button>
-        <button class="tab-btn" onclick="switchTab('listTab', this)">📋 データ一覧リスト</button>
+        <button class="tab-button active" onclick="switchTab('mapTab', this)">島図（ヒートマップ）</button>
+        <button class="tab-button" onclick="switchTab('listTab', this)">データ一覧リスト</button>
       </div>
 
+      <!-- 島図タブ -->
       <div id="mapTab" class="tab-content active">
         <div id="scrollHint" class="scroll-hint">
           <div class="scroll-hint-left">
@@ -416,18 +484,21 @@
         </div>
       </div>
 
+      <!-- データ一覧タブ -->
       <div id="listTab" class="tab-content">
-        <table id="resultTable">
-          <thead>
-            <tr>
-              <th>台番号</th>
-              <th>Sランク回数</th>
-              <th>対象日数</th>
-              <th>Sランク獲得率</th>
-            </tr>
-          </thead>
-          <tbody id="resultBody"></tbody>
-        </table>
+        <div class="table-container">
+          <table id="dataTable">
+            <thead>
+              <tr>
+                <th>台番号</th>
+                <th>S出現回数</th>
+                <th>対象日数</th>
+                <th>S出現確率</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -435,6 +506,7 @@
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
     
+    // 描画から除外するキーワード（島図から消したい条件文字などを追加）
     const EXACT_IGNORE_WORDS = [
       "開始日", "終了日", "特定日", "複合イベント", "曜日", "日付", "イベント", 
       "条件", "検索条件", "期間", "対象期間", "すべて", "通常", "-", "おまち", "お待ち",
@@ -504,9 +576,11 @@
 
     function switchTab(tabId, btn) {
       var contents = document.querySelectorAll('.tab-content');
-      for (var i = 0; i < contents.length; i++) contents[i].classList.remove('active');
-      var buttons = document.querySelectorAll('.tab-btn');
-      for (var j = 0; j < buttons.length; j++) buttons[j].classList.remove('active');
+      contents.forEach(function(content) { content.classList.remove('active'); });
+
+      var buttons = document.querySelectorAll('.tab-button');
+      buttons.forEach(function(button) { button.classList.remove('active'); });
+
       document.getElementById(tabId).classList.add('active');
       btn.classList.add('active');
     }
@@ -569,6 +643,15 @@
       var str = String(cellValue).trim();
       if (str === "" || str === "-" || str === "undefined") return true;
 
+      // 完全一致チェック
+      if (EXACT_IGNORE_WORDS.indexOf(str) !== -1) return true;
+
+      // 部分一致チェック（条件項目や日付系の単語）
+      if (str.includes("開始日") || str.includes("終了日") || str.includes("特定日") || 
+          str.includes("複合イベント") || str.includes("曜日") || str.includes("おまち") || str.includes("お待ち")) {
+        return true;
+      }
+
       var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜・]+$/.test(str);
       if (isOnlySymbol) return true;
 
@@ -576,9 +659,6 @@
                           /^\d{4}-\d{2}-[a-zA-Z0-9]{1,2}$/.test(str) ||
                           /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(str);
       if (isDatePattern) return true;
-
-      if (EXACT_IGNORE_WORDS.indexOf(str) !== -1) return true;
-      if (str.indexOf("おまち") !== -1 || str.indexOf("お待ち") !== -1) return true;
 
       return false;
     }
@@ -592,9 +672,9 @@
       document.getElementById('outputArea').style.display = 'block';
       
       var rateMap = {};
-      var tbody = document.getElementById('resultBody');
+      var tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
-      
+
       if (response.tableData) {
         response.tableData.forEach(function(row) {
           if (!row || row[0] === "" || row[0] === "台番号") return;
@@ -604,9 +684,12 @@
           var rate = days > 0 ? (sCount / days) : 0;
           
           rateMap[machineId] = rate;
-          
+
           var tr = document.createElement('tr');
-          tr.innerHTML = '<td>' + machineId + '</td><td>' + sCount + '回</td><td>' + days + '日</td><td class="rate-cell">' + (rate * 100).toFixed(1) + '%</td>';
+          tr.innerHTML = '<td>' + machineId + '</td>' +
+                         '<td>' + sCount + '</td>' +
+                         '<td>' + days + '</td>' +
+                         '<td>' + (rate * 100).toFixed(1) + '%</td>';
           tbody.appendChild(tr);
         });
       }
@@ -619,10 +702,6 @@
 
       var rawRows = layout.length;
       var rawCols = layout[0] ? layout[0].length : 0;
-
-      // 切り詰めを行わず全体の行列サイズを維持して特定日でのズレを防止
-      var minR = 0, maxR = rawRows - 1;
-      var minC = 0, maxC = rawCols - 1;
 
       var activeRows = rawRows;
       var activeCols = rawCols;
