@@ -638,24 +638,37 @@
       return null;
     }
 
+    // 徹底的に無効セル（条件項目やゴミデータ）を検出する関数
     function isInvalidContent(cellValue) {
       if (cellValue === undefined || cellValue === null) return true;
       var str = String(cellValue).trim();
-      if (str === "" || str === "-" || str === "undefined") return true;
+      if (str === "" || str === "-" || str === "undefined" || str === "null") return true;
 
+      // 完全一致の無視ワード
       if (EXACT_IGNORE_WORDS.indexOf(str) !== -1) return true;
 
+      // キーワードが含まれている場合は即判定
       if (str.includes("開始日") || str.includes("終了日") || str.includes("特定日") || 
-          str.includes("複合イベント") || str.includes("曜日") || str.includes("おまち") || str.includes("お待ち")) {
+          str.includes("複合") || str.includes("イベント") || str.includes("曜日") || 
+          str.includes("おまち") || str.includes("お待ち") || str.includes("条件")) {
         return true;
       }
 
+      // プルダウンの選択肢として使われる特定日・複合イベント名等の選択状態文字を弾く
+      var b3Val = document.getElementById('b3') ? document.getElementById('b3').value : "";
+      var b4Val = document.getElementById('b4') ? document.getElementById('b4').value : "";
+      if (b3Val && str.includes(b3Val)) return true;
+      if (b4Val && str.includes(b4Val)) return true;
+
+      // 記号のみ
       var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜・]+$/.test(str);
       if (isOnlySymbol) return true;
 
+      // 日付形式（2023/01/01, 2024-05-10, 5月1日 など）
       var isDatePattern = /^(20\d{2}|2\d)[\/\-\.\s年]\d{1,2}([\/\-\.\s月][a-zA-Z0-9]{1,2}日?)?$/.test(str) ||
                           /^\d{4}-\d{2}-[a-zA-Z0-9]{1,2}$/.test(str) ||
-                          /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(str);
+                          /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(str) ||
+                          /^\d{1,2}\/\d{1,2}$/.test(str);
       if (isDatePattern) return true;
 
       return false;
@@ -701,7 +714,7 @@
       var originalRows = rawLayout.length;
       var originalCols = rawLayout[0] ? rawLayout[0].length : 0;
 
-      // --- 🔍 左・上の不要な領域（開始日など）と空行・空列の切り落とし（Crop）処理 ---
+      // --- 🔍 有効な島図データの範囲（境界線）を正確に特定 ---
       var minR = originalRows, maxR = -1;
       var minC = originalCols, maxC = -1;
 
@@ -717,7 +730,7 @@
         }
       }
 
-      // 有効データが一切なかった場合のフォールバック
+      // 万が一全て弾かれた場合の安全装置
       if (minR > maxR) { minR = 0; maxR = originalRows - 1; }
       if (minC > maxC) { minC = 0; maxC = originalCols - 1; }
 
@@ -785,6 +798,7 @@
             }
           }
 
+          // 不要な条件系セル・空セルは完全に非表示化
           if (isInvalidContent(cellValue)) {
             htmlBuilder += '<div class="grid-cell cell-empty" style="' + spanStyle + '"></div>';
             continue;
