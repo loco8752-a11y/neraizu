@@ -506,7 +506,7 @@
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
     
-    // 描画から除外するキーワード（島図から消したい条件文字などを追加）
+    // 完全に無視・削除したい単語リスト
     const EXACT_IGNORE_WORDS = [
       "開始日", "終了日", "特定日", "複合イベント", "曜日", "日付", "イベント", 
       "条件", "検索条件", "期間", "対象期間", "すべて", "通常", "-", "おまち", "お待ち",
@@ -643,10 +643,8 @@
       var str = String(cellValue).trim();
       if (str === "" || str === "-" || str === "undefined") return true;
 
-      // 完全一致チェック
       if (EXACT_IGNORE_WORDS.indexOf(str) !== -1) return true;
 
-      // 部分一致チェック（条件項目や日付系の単語）
       if (str.includes("開始日") || str.includes("終了日") || str.includes("特定日") || 
           str.includes("複合イベント") || str.includes("曜日") || str.includes("おまち") || str.includes("お待ち")) {
         return true;
@@ -697,29 +695,54 @@
       var gridMap = document.getElementById('gridMap');
       gridMap.innerHTML = ''; 
       
-      var layout = response.mapLayout;
-      var mergeList = response.mergeList || [];
+      var rawLayout = response.mapLayout;
+      var rawMergeList = response.mergeList || [];
 
-      var rawRows = layout.length;
-      var rawCols = layout[0] ? layout[0].length : 0;
+      var originalRows = rawLayout.length;
+      var originalCols = rawLayout[0] ? rawLayout[0].length : 0;
 
-      var activeRows = rawRows;
-      var activeCols = rawCols;
+      // --- 🔍 左・上の不要な領域（開始日など）と空行・空列の切り落とし（Crop）処理 ---
+      var minR = originalRows, maxR = -1;
+      var minC = originalCols, maxC = -1;
 
+      for (var r = 0; r < originalRows; r++) {
+        for (var c = 0; c < originalCols; c++) {
+          var val = rawLayout[r][c];
+          if (!isInvalidContent(val)) {
+            if (r < minR) minR = r;
+            if (r > maxR) maxR = r;
+            if (c < minC) minC = c;
+            if (c > maxC) maxC = c;
+          }
+        }
+      }
+
+      // 有効データが一切なかった場合のフォールバック
+      if (minR > maxR) { minR = 0; maxR = originalRows - 1; }
+      if (minC > maxC) { minC = 0; maxC = originalCols - 1; }
+
+      var activeRows = maxR - minR + 1;
+      var activeCols = maxC - minC + 1;
+
+      // クロップ後の島図サイズでグリッド生成
       gridMap.style.gridTemplateColumns = 'repeat(' + activeCols + ', 30px)';
       gridMap.style.gridTemplateRows = 'repeat(' + activeRows + ', 24px)';
 
       var mergeMap = {};
-      var skipMatrix = Array.from({ length: rawRows }, function() {
-        return new Array(rawCols).fill(false);
+      var skipMatrix = Array.from({ length: activeRows }, function() {
+        return new Array(activeCols).fill(false);
       });
 
-      mergeList.forEach(function(m) {
-        if (m.row < rawRows && m.col < rawCols) {
-          mergeMap[m.row + "_" + m.col] = m;
-          for (var r = m.row; r < Math.min(m.row + m.numRows, rawRows); r++) {
-            for (var c = m.col; c < Math.min(m.col + m.numCols, rawCols); c++) {
-              if (r !== m.row || c !== m.col) {
+      rawMergeList.forEach(function(m) {
+        // クロップ後の相対座標に変換
+        var adjRow = m.row - minR;
+        var adjCol = m.col - minC;
+
+        if (adjRow >= 0 && adjRow < activeRows && adjCol >= 0 && adjCol < activeCols) {
+          mergeMap[adjRow + "_" + adjCol] = m;
+          for (var r = adjRow; r < Math.min(adjRow + m.numRows, activeRows); r++) {
+            for (var c = adjCol; c < Math.min(adjCol + m.numCols, activeCols); c++) {
+              if (r !== adjRow || c !== adjCol) {
                 skipMatrix[r][c] = true;
               }
             }
@@ -727,16 +750,18 @@
         }
       });
 
-      function getVal(r, c) {
-        if (r < 0 || r >= rawRows || c < 0 || c >= rawCols) return "";
-        var val = layout[r][c];
+      function getVal(adjR, adjC) {
+        var origR = adjR + minR;
+        var origC = adjC + minC;
+        if (origR < 0 || origR >= originalRows || origC < 0 || origC >= originalCols) return "";
+        var val = rawLayout[origR][origC];
         return val !== undefined && val !== null ? String(val).trim() : "";
       }
 
       var htmlBuilder = '';
 
-      for (var r = 0; r < rawRows; r++) {
-        for (var c = 0; c < rawCols; c++) {
+      for (var r = 0; r < activeRows; r++) {
+        for (var c = 0; c < activeCols; c++) {
           if (skipMatrix[r][c]) continue;
 
           var cellValue = getVal(r, c);
