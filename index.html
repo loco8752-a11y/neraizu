@@ -164,7 +164,7 @@
     tr:nth-child(even) { background-color: #f8fafc; }
     .rate-cell { font-weight: bold; color: var(--main-red); }
 
-    /* 🧭 スクロールインジケーター（指示バー） */
+    /* 🧭 スクロールインジケーター */
     .scroll-hint {
       display: flex;
       align-items: center;
@@ -236,6 +236,8 @@
       border-radius: 4px; 
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); 
       transition: all 0.15s ease;
+      min-width: 30px;
+      min-height: 24px;
     }
 
     .grid-cell:not(.cell-empty):hover { 
@@ -296,7 +298,7 @@
       text-align: start !important;
     }
 
-    /* 空セルは背景・枠・影を排除して非表示にする */
+    /* 空セルは非表示 */
     .cell-empty { 
       background-color: transparent !important; 
       border: none !important; 
@@ -401,7 +403,6 @@
       </div>
 
       <div id="mapTab" class="tab-content active">
-        <!-- インタラクティブ・スクロール指示バー -->
         <div id="scrollHint" class="scroll-hint">
           <div class="scroll-hint-left">
             <span class="scroll-icon">↔</span> 
@@ -434,7 +435,6 @@
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
     
-    // 完全一致で無効（非表示）とみなす単語リスト
     const EXACT_IGNORE_WORDS = [
       "開始日", "終了日", "特定日", "複合イベント", "曜日", "日付", "イベント", 
       "条件", "検索条件", "期間", "対象期間", "すべて", "通常", "-", "おまち", "お待ち",
@@ -564,26 +564,20 @@
       return null;
     }
 
-    // セルの値が無効（＝空マス）か判定する関数を修正
     function isInvalidContent(cellValue) {
       if (cellValue === undefined || cellValue === null) return true;
       var str = String(cellValue).trim();
       if (str === "" || str === "-" || str === "undefined") return true;
 
-      // 記号のみ
       var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜・]+$/.test(str);
       if (isOnlySymbol) return true;
 
-      // 日付形式
       var isDatePattern = /^(20\d{2}|2\d)[\/\-\.\s年]\d{1,2}([\/\-\.\s月][a-zA-Z0-9]{1,2}日?)?$/.test(str) ||
                           /^\d{4}-\d{2}-[a-zA-Z0-9]{1,2}$/.test(str) ||
                           /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(str);
       if (isDatePattern) return true;
 
-      // 特定のシステム除外キーワード（完全一致）
       if (EXACT_IGNORE_WORDS.indexOf(str) !== -1) return true;
-
-      // お待ち・システム文字列が含まれる場合のみ部分一致で除外
       if (str.indexOf("おまち") !== -1 || str.indexOf("お待ち") !== -1) return true;
 
       return false;
@@ -626,28 +620,12 @@
       var rawRows = layout.length;
       var rawCols = layout[0] ? layout[0].length : 0;
 
-      // 有効領域（空セル切り詰め）を検知
-      var minR = rawRows, maxR = -1, minC = rawCols, maxC = -1;
+      // 切り詰めを行わず全体の行列サイズを維持して特定日でのズレを防止
+      var minR = 0, maxR = rawRows - 1;
+      var minC = 0, maxC = rawCols - 1;
 
-      for (var r = 0; r < rawRows; r++) {
-        for (var c = 0; c < rawCols; c++) {
-          var val = layout[r][c] !== undefined && layout[r][c] !== null ? String(layout[r][c]).trim() : "";
-          if (!isInvalidContent(val)) {
-            if (r < minR) minR = r;
-            if (r > maxR) maxR = r;
-            if (c < minC) minC = c;
-            if (c > maxC) maxC = c;
-          }
-        }
-      }
-
-      if (minR > maxR || minC > maxC) {
-        minR = 0; maxR = rawRows - 1;
-        minC = 0; maxC = rawCols - 1;
-      }
-
-      var activeRows = maxR - minR + 1;
-      var activeCols = maxC - minC + 1;
+      var activeRows = rawRows;
+      var activeCols = rawCols;
 
       gridMap.style.gridTemplateColumns = 'repeat(' + activeCols + ', 30px)';
       gridMap.style.gridTemplateRows = 'repeat(' + activeRows + ', 24px)';
@@ -678,8 +656,8 @@
 
       var htmlBuilder = '';
 
-      for (var r = minR; r <= maxR; r++) {
-        for (var c = minC; c <= maxC; c++) {
+      for (var r = 0; r < rawRows; r++) {
+        for (var c = 0; c < rawCols; c++) {
           if (skipMatrix[r][c]) continue;
 
           var cellValue = getVal(r, c);
@@ -787,6 +765,5 @@
       gridMap.innerHTML = htmlBuilder;
     }
   </script>
-
 </body>
 </html>
