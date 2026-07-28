@@ -22,11 +22,11 @@
       --bg-slate: #f8fafc;
       --border-color: #e2e8f0;
       
-      --rate-high: #f43f5e;   /* 25%以上: ローズレッド */
-      --rate-mid: #f59e0b;    /* 10-24%: アンバー */
-      --rate-low: #3b82f6;    /* 1-9%: コバルトブルー */
-      --rate-zero: #ffffff;   /* 0%: 白カード */
-      --machine-bg: #e2e8f0;  /* 台番デフォルト: ライトグレー */
+      --rate-high: #f43f5e;
+      --rate-mid: #f59e0b;
+      --rate-low: #3b82f6;
+      --rate-zero: #ffffff;
+      --machine-bg: #e2e8f0;
     }
 
     body { 
@@ -335,7 +335,7 @@
       text-align: start !important;
     }
 
-    /* 空セルは非表示 */
+    /* 空セル非表示 */
     .cell-empty { 
       background-color: transparent !important; 
       border: none !important; 
@@ -371,6 +371,169 @@
 
     tr:hover {
       background-color: #f1f5f9;
+      cursor: pointer;
+    }
+
+    /* 🪟 モーダル（詳細ダイアログ）スタイル */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.1);
+      overflow: hidden;
+      animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      max-height: 85vh;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      background: var(--deep-black);
+      color: #ffffff;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      cursor: pointer;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+
+    .modal-close-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+    }
+
+    .modal-body {
+      padding: 16px 20px;
+      overflow-y: auto;
+      flex-grow: 1;
+      background: #f8fafc;
+    }
+
+    /* 📅 日付別カードデザイン */
+    .day-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      transition: all 0.2s ease;
+    }
+
+    .day-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .day-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+
+    .day-date {
+      font-size: 15px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .day-machine {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      background: #f1f5f9;
+      padding: 3px 8px;
+      border-radius: 6px;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .day-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .day-stat-item {
+      background: #f8fafc;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
+      text-align: center;
+    }
+
+    .day-stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+
+    .day-stat-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .day-stat-value.red { color: var(--main-red); }
+    .day-stat-value.blue { color: #2563eb; }
+
+    .no-data-msg {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+      font-size: 14px;
     }
 
     @media (max-width: 768px) {
@@ -405,14 +568,13 @@
         padding: 0 8px !important;
       }
 
-      input[type="date"]::-webkit-calendar-picker-indicator {
-        margin-left: 0;
-        padding: 0;
-      }
-
       .grid-map {
         margin: 0 !important;
         padding: 0 !important;
+      }
+
+      .day-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -474,7 +636,7 @@
         <div id="scrollHint" class="scroll-hint">
           <div class="scroll-hint-left">
             <span class="scroll-icon">↔</span> 
-            <span>上下左右に自由に動かせます</span>
+            <span>上下左右に自由に動かせます（タップで詳細）</span>
           </div>
           <span class="scroll-hint-badge">Scrollable Area</span>
         </div>
@@ -503,10 +665,29 @@
     </div>
   </div>
 
+  <!-- 🪟 単日データ連動型モーダル -->
+  <div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>🎰 台番 <span id="modalMachineId">-</span></span>
+          <span class="modal-subtitle" id="modalSCountInfo">Sランク獲得: 0回</span>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()">✕</button>
+      </div>
+      
+      <div class="modal-body" id="modalDayCardsList">
+        <!-- JSで日付ごとの単日データカードが動的に挿入されます -->
+      </div>
+    </div>
+  </div>
+
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
     
-    // 完全に無視・削除したい単語リスト
+    // 台番号ごとの単日レコード配列を保持するオブジェクト
+    var globalMachineRecordsMap = {};
+
     const EXACT_IGNORE_WORDS = [
       "開始日", "終了日", "特定日", "複合イベント", "曜日", "日付", "イベント", 
       "条件", "検索条件", "期間", "対象期間", "すべて", "通常", "-", "おまち", "お待ち",
@@ -638,33 +819,27 @@
       return null;
     }
 
-    // 徹底的に無効セル（条件項目やゴミデータ）を検出する関数
     function isInvalidContent(cellValue) {
       if (cellValue === undefined || cellValue === null) return true;
       var str = String(cellValue).trim();
       if (str === "" || str === "-" || str === "undefined" || str === "null") return true;
 
-      // 完全一致の無視ワード
       if (EXACT_IGNORE_WORDS.indexOf(str) !== -1) return true;
 
-      // キーワードが含まれている場合は即判定
       if (str.includes("開始日") || str.includes("終了日") || str.includes("特定日") || 
           str.includes("複合") || str.includes("イベント") || str.includes("曜日") || 
           str.includes("おまち") || str.includes("お待ち") || str.includes("条件")) {
         return true;
       }
 
-      // プルダウンの選択肢として使われる特定日・複合イベント名等の選択状態文字を弾く
       var b3Val = document.getElementById('b3') ? document.getElementById('b3').value : "";
       var b4Val = document.getElementById('b4') ? document.getElementById('b4').value : "";
       if (b3Val && str.includes(b3Val)) return true;
       if (b4Val && str.includes(b4Val)) return true;
 
-      // 記号のみ
       var isOnlySymbol = /^[\{\}\(\)\[\]\?\!\,\.\:\;\-\_\=\+\/\*\\\&\|\<\>\'\"～〜・]+$/.test(str);
       if (isOnlySymbol) return true;
 
-      // 日付形式（2023/01/01, 2024-05-10, 5月1日 など）
       var isDatePattern = /^(20\d{2}|2\d)[\/\-\.\s年]\d{1,2}([\/\-\.\s月][a-zA-Z0-9]{1,2}日?)?$/.test(str) ||
                           /^\d{4}-\d{2}-[a-zA-Z0-9]{1,2}$/.test(str) ||
                           /^\d{4}\/\d{1,2}\/\d{1,2}$/.test(str) ||
@@ -683,6 +858,7 @@
       document.getElementById('outputArea').style.display = 'block';
       
       var rateMap = {};
+      globalMachineRecordsMap = {}; // 初期化
       var tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
@@ -696,7 +872,24 @@
           
           rateMap[machineId] = rate;
 
+          /* 
+             GAS側から返される row[3]（または指定インデックス）に、
+             Sランクを獲得した各日の単日データオブジェクト配列を入れて渡す想定
+             例: row[3] = [
+                   { date: "2026/07/07", machineName: "L北斗の拳", games: 8500, diff: 3200, bb: 28, rb: 18, prob: "1/184.7" },
+                   { date: "2026/07/17", machineName: "L北斗の拳", games: 7200, diff: -400, bb: 18, rb: 12, prob: "1/240.0" }
+                 ]
+          */
+          var dayRecords = Array.isArray(row[3]) ? row[3] : [];
+
+          globalMachineRecordsMap[machineId] = {
+            sCount: sCount,
+            sRate: (rate * 100).toFixed(1) + '%',
+            records: dayRecords
+          };
+
           var tr = document.createElement('tr');
+          tr.setAttribute('onclick', 'openMachineModal("' + machineId + '")');
           tr.innerHTML = '<td>' + machineId + '</td>' +
                          '<td>' + sCount + '</td>' +
                          '<td>' + days + '</td>' +
@@ -714,7 +907,6 @@
       var originalRows = rawLayout.length;
       var originalCols = rawLayout[0] ? rawLayout[0].length : 0;
 
-      // --- 🔍 有効な島図データの範囲（境界線）を正確に特定 ---
       var minR = originalRows, maxR = -1;
       var minC = originalCols, maxC = -1;
 
@@ -730,14 +922,12 @@
         }
       }
 
-      // 万が一全て弾かれた場合の安全装置
       if (minR > maxR) { minR = 0; maxR = originalRows - 1; }
       if (minC > maxC) { minC = 0; maxC = originalCols - 1; }
 
       var activeRows = maxR - minR + 1;
       var activeCols = maxC - minC + 1;
 
-      // クロップ後の島図サイズでグリッド生成
       gridMap.style.gridTemplateColumns = 'repeat(' + activeCols + ', 30px)';
       gridMap.style.gridTemplateRows = 'repeat(' + activeRows + ', 24px)';
 
@@ -747,7 +937,6 @@
       });
 
       rawMergeList.forEach(function(m) {
-        // クロップ後の相対座標に変換
         var adjRow = m.row - minR;
         var adjCol = m.col - minC;
 
@@ -789,16 +978,10 @@
             var numRows = Number(mergeInfo.numRows) || 1;
             
             spanStyle = 'grid-column: span ' + numCols + '; grid-row: span ' + numRows + ';';
-            
-            if (numRows > numCols) {
-              isVertical = true;
-            }
-            if (numCols > 1 || numRows > 1) {
-              isMerged = true;
-            }
+            if (numRows > numCols) isVertical = true;
+            if (numCols > 1 || numRows > 1) isMerged = true;
           }
 
-          // 不要な条件系セル・空セルは完全に非表示化
           if (isInvalidContent(cellValue)) {
             htmlBuilder += '<div class="grid-cell cell-empty" style="' + spanStyle + '"></div>';
             continue;
@@ -828,20 +1011,22 @@
           if (isMachine) {
             var rate = rateMap[cellValue];
             var color = getColorHex(rate);
+            var clickAttr = 'onclick="openMachineModal(\'' + cellValue + '\')"';
             if (color) {
-              htmlBuilder += '<div class="grid-cell" style="' + spanStyle + ' background-color: ' + color + '; color: #ffffff;" title="台: ' + cellValue + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + cellValue + '</div>';
+              htmlBuilder += '<div class="grid-cell" ' + clickAttr + ' style="' + spanStyle + ' background-color: ' + color + '; color: #ffffff;" title="台: ' + cellValue + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + cellValue + '</div>';
             } else {
-              htmlBuilder += '<div class="grid-cell cell-machine-default" style="' + spanStyle + '" title="台: ' + cellValue + '\n確率: 0.0%">' + cellValue + '</div>';
+              htmlBuilder += '<div class="grid-cell cell-machine-default" ' + clickAttr + ' style="' + spanStyle + '" title="台: ' + cellValue + '\n確率: 0.0%">' + cellValue + '</div>';
             }
           } 
           else if (isRateCell) {
             var rate = rateMap[matchedMachineId];
             var color = getColorHex(rate);
             var displayPercent = rate !== undefined ? (rate * 100).toFixed(0) + "%" : cellValue;
+            var clickAttr = 'onclick="openMachineModal(\'' + matchedMachineId + '\')"';
             if (color) {
-              htmlBuilder += '<div class="grid-cell" style="' + spanStyle + ' background-color: #ffffff; color: ' + color + '; border: 1.5px solid ' + color + ';" title="台: ' + matchedMachineId + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + displayPercent + '</div>';
+              htmlBuilder += '<div class="grid-cell" ' + clickAttr + ' style="' + spanStyle + ' background-color: #ffffff; color: ' + color + '; border: 1.5px solid ' + color + ';" title="台: ' + matchedMachineId + '\n確率: ' + (rate * 100).toFixed(1) + '%">' + displayPercent + '</div>';
             } else {
-              htmlBuilder += '<div class="grid-cell cell-rate-default" style="' + spanStyle + '" title="台: ' + matchedMachineId + '\n確率: 0.0%">' + displayPercent + '</div>';
+              htmlBuilder += '<div class="grid-cell cell-rate-default" ' + clickAttr + ' style="' + spanStyle + '" title="台: ' + matchedMachineId + '\n確率: 0.0%">' + displayPercent + '</div>';
             }
           } 
           else {
@@ -881,6 +1066,74 @@
         }
       }
       gridMap.innerHTML = htmlBuilder;
+    }
+
+    // 🪟 モーダルコントロール関数（単日カード一覧レンダリング）
+    function openMachineModal(machineId) {
+      var data = globalMachineRecordsMap[machineId] || { sCount: 0, sRate: '0.0%', records: [] };
+      
+      document.getElementById('modalMachineId').textContent = machineId;
+      document.getElementById('modalSCountInfo').textContent = 'Sランク獲得: ' + data.sCount + '回 (' + data.sRate + ')';
+
+      var listContainer = document.getElementById('modalDayCardsList');
+      listContainer.innerHTML = '';
+
+      if (data.records && data.records.length > 0) {
+        data.records.forEach(function(rec) {
+          var card = document.createElement('div');
+          card.className = 'day-card';
+
+          var diffVal = rec.diff !== undefined ? Number(rec.diff) : null;
+          var diffText = diffVal !== null ? (diffVal > 0 ? '+' + diffVal.toLocaleString() : diffVal.toLocaleString()) + ' 枚' : '-';
+          var diffClass = diffVal > 0 ? 'red' : (diffVal < 0 ? 'blue' : '');
+
+          var gamesText = rec.games !== undefined ? Number(rec.games).toLocaleString() + ' G' : '-';
+          var bbText = rec.bb !== undefined ? rec.bb + ' 回' : '-';
+          var rbText = rec.rb !== undefined ? rec.rb + ' 回' : '-';
+          var probText = rec.prob || '-';
+          var mName = rec.machineName || '-';
+
+          card.innerHTML = 
+            '<div class="day-card-header">' +
+              '<div class="day-date">📅 ' + rec.date + '</div>' +
+              '<div class="day-machine" title="' + mName + '">🎰 ' + mName + '</div>' +
+            '</div>' +
+            '<div class="day-stat-grid">' +
+              '<div class="day-stat-item">' +
+                '<div class="day-stat-label">ゲーム数</div>' +
+                '<div class="day-stat-value">' + gamesText + '</div>' +
+              '</div>' +
+              '<div class="day-stat-item">' +
+                '<div class="day-stat-label">差枚数</div>' +
+                '<div class="day-stat-value ' + diffClass + '">' + diffText + '</div>' +
+              '</div>' +
+              '<div class="day-stat-item">' +
+                '<div class="day-stat-label">合成確率</div>' +
+                '<div class="day-stat-value blue">' + probText + '</div>' +
+              '</div>' +
+              '<div class="day-stat-item">' +
+                '<div class="day-stat-label">BB回数</div>' +
+                '<div class="day-stat-value">' + bbText + '</div>' +
+              '</div>' +
+              '<div class="day-stat-item">' +
+                '<div class="day-stat-label">RB回数</div>' +
+                '<div class="day-stat-value">' + rbText + '</div>' +
+              '</div>' +
+            '</div>';
+
+          listContainer.appendChild(card);
+        });
+      } else {
+        listContainer.innerHTML = '<div class="no-data-msg">指定期間内にSランクの獲得データはありません</div>';
+      }
+
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeModal(e) {
+      if (!e || e.target.id === 'detailModal' || e.target.classList.contains('modal-close-btn')) {
+        document.getElementById('detailModal').style.display = 'none';
+      }
     }
   </script>
 </body>
