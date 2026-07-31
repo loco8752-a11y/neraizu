@@ -562,6 +562,13 @@
       transition: all 0.2s ease;
     }
 
+    /* Sランク獲得時のカードハイライト強調 */
+    .day-card.rank-s-card {
+      background: #fff5f5;
+      border: 1.5px solid #fecdd3;
+      box-shadow: 0 4px 8px rgba(225, 29, 72, 0.06);
+    }
+
     .day-card:last-child {
       margin-bottom: 0;
     }
@@ -575,6 +582,10 @@
       border-bottom: 1px dashed #cbd5e1;
       flex-wrap: wrap;
       gap: 6px;
+    }
+
+    .day-card.rank-s-card .day-card-header {
+      border-bottom-color: #fca5a5;
     }
 
     .day-date-group {
@@ -618,10 +629,11 @@
       border: 1px solid #bfdbfe;
     }
     .badge-rank-s {
-      background-color: #ffe4e6;
-      color: #e11d48;
-      border: 1px solid #fecdd3;
+      background-color: #e11d48;
+      color: #ffffff;
+      border: 1px solid #be123c;
       font-weight: 800;
+      box-shadow: 0 1px 3px rgba(225, 29, 72, 0.3);
     }
 
     .day-machine {
@@ -637,6 +649,11 @@
       text-overflow: ellipsis;
     }
 
+    .day-card.rank-s-card .day-machine {
+      background: #ffe4e6;
+      color: #9f1239;
+    }
+
     .day-stat-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -649,6 +666,11 @@
       border-radius: 8px;
       border: 1px solid #f1f5f9;
       text-align: center;
+    }
+
+    .day-card.rank-s-card .day-stat-item {
+      background: #ffffff;
+      border-color: #ffe4e6;
     }
 
     .day-stat-label {
@@ -1070,7 +1092,6 @@
 
       var summaryCard = document.getElementById('singleDaySummaryCard');
       if (isSingleDay && totalMachines > 0) {
-        // GAS側から正確に計算された全台差枚数を優先使用
         var totalDiff = (response.totalDiff !== undefined && response.totalDiff !== null) ? Number(response.totalDiff) : 0;
         var avgDiff = Math.round(totalDiff / totalMachines);
         var totalDiffFormatted = (totalDiff > 0 ? '+' : '') + totalDiff.toLocaleString();
@@ -1299,7 +1320,12 @@
       if (data.records && data.records.length > 0) {
         data.records.forEach(function(rec) {
           var card = document.createElement('div');
-          card.className = 'day-card';
+          
+          var rankVal = rec.rank || '-';
+          var isRankS = (rankVal === "S");
+
+          // Sランクの有無で背景ハイライト用のクラスを付与
+          card.className = isRankS ? 'day-card rank-s-card' : 'day-card';
 
           var diffVal = rec.diff !== undefined ? Number(rec.diff) : null;
           var diffText = diffVal !== null ? (diffVal > 0 ? '+' + diffVal.toLocaleString() : diffVal.toLocaleString()) + ' 枚' : '-';
@@ -1310,7 +1336,6 @@
           var rbText = rec.rb !== undefined ? rec.rb + ' 回' : '-';
           var probText = rec.prob || '-';
           var mName = rec.machineName || '-';
-          var rankVal = rec.rank || '-';
 
           var badgesHtml = '';
           if (rec.weekday) {
@@ -1322,7 +1347,7 @@
           if (rec.fukugo && rec.fukugo !== "-") {
             badgesHtml += '<span class="badge badge-fukugo">' + rec.fukugo + '</span>';
           }
-          if (rankVal === "S") {
+          if (isRankS) {
             badgesHtml += '<span class="badge badge-rank-s">★ Sランク</span>';
           }
 
