@@ -151,7 +151,105 @@
 
     #loading { display: none; text-align: center; font-weight: bold; color: var(--main-red); margin: 20px 0; }
 
-    /* 🏷️ タブデザイン */
+    /* 単日集計カードスタイル */
+    .summary-card {
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .summary-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .summary-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .summary-info-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .summary-badge {
+      background: var(--main-red);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .badge-info-weekday {
+      background: #334155;
+      color: #cbd5e1;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #475569;
+    }
+
+    .badge-info-tokuteibi {
+      background: #7f1d1d;
+      color: #fca5a5;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #991b1b;
+    }
+
+    .badge-info-fukugo {
+      background: #1e3a8a;
+      color: #93c5fd;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #1e40af;
+    }
+
+    .summary-stats {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .summary-item {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .summary-value {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .summary-value.plus { color: #f43f5e; }
+    .summary-value.minus { color: #3b82f6; }
+
+    /* タブデザイン */
     .tabs { 
       display: flex; 
       gap: 8px; 
@@ -200,7 +298,7 @@
       display: block; 
     }
 
-    /* 🧭 スクロールインジケーター */
+    /* スクロールインジケーター */
     .scroll-hint {
       display: flex;
       align-items: center;
@@ -374,7 +472,7 @@
       cursor: pointer;
     }
 
-    /* 🪟 モーダル（詳細ダイアログ）スタイル */
+    /* モーダル（詳細ダイアログ）スタイル */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -453,7 +551,7 @@
       background: #f8fafc;
     }
 
-    /* 📅 日付別カードデザイン */
+    /* 日付別カードデザイン */
     .day-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -495,7 +593,6 @@
       gap: 6px;
     }
 
-    /* ✨ 追加：バッジ用スタイル */
     .badge {
       display: inline-flex;
       align-items: center;
@@ -519,6 +616,12 @@
       background-color: #eff6ff;
       color: #2563eb;
       border: 1px solid #bfdbfe;
+    }
+    .badge-rank-s {
+      background-color: #ffe4e6;
+      color: #e11d48;
+      border: 1px solid #fecdd3;
+      font-weight: 800;
     }
 
     .day-machine {
@@ -611,6 +714,11 @@
       .day-stat-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+
+      .summary-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -661,6 +769,9 @@
     
     <!-- 結果表示エリア -->
     <div id="outputArea" style="display:none;">
+      <!-- 単日集計カード（単日指定時のみ動的生成） -->
+      <div id="singleDaySummaryCard" style="display:none;" class="summary-card"></div>
+
       <div class="tabs">
         <button class="tab-button active" onclick="switchTab('mapTab', this)">島図（ヒートマップ）</button>
         <button class="tab-button" onclick="switchTab('listTab', this)">データ一覧リスト</button>
@@ -700,7 +811,7 @@
     </div>
   </div>
 
-  <!-- 🪟 単日データ連動型モーダル -->
+  <!-- 単日データ連動型モーダル -->
   <div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -708,7 +819,7 @@
           <span>🎰 台番 <span id="modalMachineId">-</span></span>
           <span class="modal-subtitle" id="modalSCountInfo">Sランク獲得: 0回</span>
         </div>
-        <button class="modal-close-btn" onclick="closeModal()">✕</button>
+        <button class="modal-close-btn" onclick="closeModal(event)">✕</button>
       </div>
       
       <div class="modal-body" id="modalDayCardsList">
@@ -720,7 +831,6 @@
   <script>
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
     
-    // 台番号ごとの単日レコード配列を保持するオブジェクト
     var globalMachineRecordsMap = {};
 
     const EXACT_IGNORE_WORDS = [
@@ -834,7 +944,7 @@
       .then(response => response.json())
       .then(res => {
         if (res.status === "success") {
-          showResults(res.data);
+          showResults(res.data, startDateVal, endDateVal);
         } else {
           alert("エラー: " + res.message);
           document.getElementById('loading').style.display = 'none';
@@ -884,7 +994,7 @@
       return false;
     }
 
-    function showResults(response) {
+    function showResults(response, startDate, endDate) {
       document.getElementById('loading').style.display = 'none';
       if (!response || !response.mapLayout) {
         alert('エラー：島図データが取得できませんでした。');
@@ -893,11 +1003,30 @@
       document.getElementById('outputArea').style.display = 'block';
       
       var rateMap = {};
-      globalMachineRecordsMap = {}; // 初期化
+      globalMachineRecordsMap = {}; 
       var tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
+      var isSingleDay = (startDate && endDate && startDate === endDate);
+      var totalMachines = 0;
+
+      var dayWeekday = "";
+      var dayTokuteibi = "";
+      var dayFukugo = "";
+
+      if (isSingleDay && startDate) {
+        var d = new Date(startDate.replace(/-/g, '/'));
+        if (!isNaN(d.getTime())) {
+          var weekNames = ['日', '月', '火', '水', '木', '金', '土'];
+          dayWeekday = weekNames[d.getDay()];
+        }
+      }
+
       if (response.tableData) {
+        totalMachines = response.tableData.filter(function(r) { 
+          return r && r[0] !== "" && r[0] !== "台番号"; 
+        }).length;
+
         response.tableData.forEach(function(row) {
           if (!row || row[0] === "" || row[0] === "台番号") return;
           var machineId = String(row[0]).trim();
@@ -908,6 +1037,14 @@
           rateMap[machineId] = rate;
 
           var dayRecords = Array.isArray(row[3]) ? row[3] : [];
+
+          if (isSingleDay && dayRecords.length > 0) {
+            dayRecords.forEach(function(rec) {
+              if (!dayTokuteibi && rec.tokuteibi) dayTokuteibi = rec.tokuteibi;
+              if (!dayFukugo && rec.fukugo) dayFukugo = rec.fukugo;
+              if (!dayWeekday && rec.weekday) dayWeekday = rec.weekday;
+            });
+          }
 
           globalMachineRecordsMap[machineId] = {
             sCount: sCount,
@@ -923,6 +1060,61 @@
                          '<td>' + (rate * 100).toFixed(1) + '%</td>';
           tbody.appendChild(tr);
         });
+      }
+
+      if (isSingleDay) {
+        if (!dayTokuteibi && response.tokuteibi) dayTokuteibi = response.tokuteibi;
+        if (!dayFukugo && response.fukugo) dayFukugo = response.fukugo;
+        if (!dayWeekday && response.weekday) dayWeekday = response.weekday;
+      }
+
+      var summaryCard = document.getElementById('singleDaySummaryCard');
+      if (isSingleDay && totalMachines > 0) {
+        // GAS側から正確に計算された全台差枚数を優先使用
+        var totalDiff = (response.totalDiff !== undefined && response.totalDiff !== null) ? Number(response.totalDiff) : 0;
+        var avgDiff = Math.round(totalDiff / totalMachines);
+        var totalDiffFormatted = (totalDiff > 0 ? '+' : '') + totalDiff.toLocaleString();
+        var avgDiffFormatted = (avgDiff > 0 ? '+' : '') + avgDiff.toLocaleString();
+
+        var totalClass = totalDiff >= 0 ? 'plus' : 'minus';
+        var avgClass = avgDiff >= 0 ? 'plus' : 'minus';
+
+        var dayBadgesHtml = '';
+        if (dayWeekday) {
+          dayBadgesHtml += '<span class="badge-info-weekday">' + dayWeekday + '曜日</span>';
+        }
+        if (dayTokuteibi && dayTokuteibi !== "通常") {
+          dayBadgesHtml += '<span class="badge-info-tokuteibi">特定日: ' + dayTokuteibi + '</span>';
+        }
+        if (dayFukugo && dayFukugo !== "-") {
+          dayBadgesHtml += '<span class="badge-info-fukugo">複合: ' + dayFukugo + '</span>';
+        }
+
+        summaryCard.innerHTML = 
+          '<div class="summary-title-group">' +
+            '<div class="summary-title">' +
+              '<span>📅 ' + startDate + ' 集計結果</span>' +
+              '<span class="summary-badge">単日データ</span>' +
+            '</div>' +
+            (dayBadgesHtml ? '<div class="summary-info-badges">' + dayBadgesHtml + '</div>' : '') +
+          '</div>' +
+          '<div class="summary-stats">' +
+            '<div class="summary-item">' +
+              '<span class="summary-label">総差枚数:</span>' +
+              '<span class="summary-value ' + totalClass + '">' + totalDiffFormatted + ' 枚</span>' +
+            '</div>' +
+            '<div class="summary-item">' +
+              '<span class="summary-label">全台平均差枚数:</span>' +
+              '<span class="summary-value ' + avgClass + '">' + avgDiffFormatted + ' 枚 /台</span>' +
+            '</div>' +
+            '<div class="summary-item">' +
+              '<span class="summary-label">設置総台数:</span>' +
+              '<span class="summary-value" style="font-size:15px;">' + totalMachines + ' 台</span>' +
+            '</div>' +
+          '</div>';
+        summaryCard.style.display = 'flex';
+      } else {
+        summaryCard.style.display = 'none';
       }
 
       var gridMap = document.getElementById('gridMap');
@@ -1095,7 +1287,6 @@
       gridMap.innerHTML = htmlBuilder;
     }
 
-    // 🪟 モーダルコントロール関数（単日カード一覧レンダリング・バッジ表示追加版）
     function openMachineModal(machineId) {
       var data = globalMachineRecordsMap[machineId] || { sCount: 0, sRate: '0.0%', records: [] };
       
@@ -1119,8 +1310,8 @@
           var rbText = rec.rb !== undefined ? rec.rb + ' 回' : '-';
           var probText = rec.prob || '-';
           var mName = rec.machineName || '-';
+          var rankVal = rec.rank || '-';
 
-          // ✨ 曜日・特定日・複合イベントのバッジ要素を作成
           var badgesHtml = '';
           if (rec.weekday) {
             badgesHtml += '<span class="badge badge-weekday">' + rec.weekday + '</span>';
@@ -1130,6 +1321,9 @@
           }
           if (rec.fukugo && rec.fukugo !== "-") {
             badgesHtml += '<span class="badge badge-fukugo">' + rec.fukugo + '</span>';
+          }
+          if (rankVal === "S") {
+            badgesHtml += '<span class="badge badge-rank-s">★ Sランク</span>';
           }
 
           card.innerHTML = 
@@ -1166,7 +1360,7 @@
           listContainer.appendChild(card);
         });
       } else {
-        listContainer.innerHTML = '<div class="no-data-msg">指定期間内にSランクの獲得データはありません</div>';
+        listContainer.innerHTML = '<div class="no-data-msg">指定期間内に該当する稼働データはありません</div>';
       }
 
       document.getElementById('detailModal').style.display = 'flex';
