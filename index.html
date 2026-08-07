@@ -149,7 +149,104 @@
       width: 100%;
     }
 
-    #loading { display: none; text-align: center; font-weight: bold; color: var(--main-red); margin: 20px 0; }
+    /* ----------------------------------
+       リッチなプログレスバーローディング
+    ---------------------------------- */
+    #loading {
+      display: none;
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin: 24px 0;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+    }
+
+    .loading-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .loading-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .loading-spinner-mini {
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top-color: var(--main-red);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text-shimmer {
+      font-size: 15px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #ffffff 0%, #fca5a5 50%, #ffffff 100%);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 1.8s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .loading-percent {
+      font-size: 16px;
+      font-weight: 800;
+      color: #38bdf8;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background: #1e293b;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid #334155;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--main-red) 0%, #ff6b6b 50%, #f59e0b 100%);
+      border-radius: 999px;
+      transition: width 0.1s linear;
+      position: relative;
+    }
+
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+      animation: barGlow 1.5s infinite;
+    }
+
+    @keyframes barGlow {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .loading-subtext {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 10px;
+      text-align: right;
+    }
 
     /* 単日集計カードスタイル */
     .summary-card {
@@ -248,6 +345,7 @@
 
     .summary-value.plus { color: #f43f5e; }
     .summary-value.minus { color: #3b82f6; }
+    .summary-value.games { color: #38bdf8; }
 
     /* タブデザイン */
     .tabs { 
@@ -373,6 +471,7 @@
       transition: all 0.15s ease;
       min-width: 30px;
       min-height: 24px;
+      position: relative;
     }
 
     .grid-cell:not(.cell-empty):hover { 
@@ -413,6 +512,19 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
 
+    .cell-text-label:hover {
+      background-color: #f1f5f9 !important;
+      border-color: var(--main-red) !important;
+    }
+
+    .cell-high-game-label {
+      background-color: #fef08a !important; 
+      color: #854d0e !important;            
+      border: 2px solid #eab308 !important;   
+      box-shadow: 0 0 10px rgba(234, 179, 8, 0.4) !important;
+      font-weight: 800 !important;
+    }
+
     .cell-single-cell {
       justify-content: flex-start !important;
       text-align: left !important;
@@ -433,7 +545,6 @@
       text-align: start !important;
     }
 
-    /* 空セル非表示 */
     .cell-empty { 
       background-color: transparent !important; 
       border: none !important; 
@@ -551,7 +662,46 @@
       background: #f8fafc;
     }
 
-    /* 日付別カードデザイン */
+    .model-summary-box {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .model-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .model-summary-item {
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .model-summary-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .model-summary-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .model-summary-val.red { color: #f43f5e; }
+    .model-summary-val.blue { color: #3b82f6; }
+    .model-summary-val.games { color: #0284c7; }
+
     .day-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -562,7 +712,6 @@
       transition: all 0.2s ease;
     }
 
-    /* Sランク獲得時のカードハイライト強調 */
     .day-card.rank-s-card {
       background: #fff5f5;
       border: 1.5px solid #fecdd3;
@@ -787,7 +936,20 @@
       </div>
     </div>
     
-    <div id="loading">⏳ 集計中... 少々お待ちください</div>
+    <!-- リッチ・プログレスバーローディング領域 -->
+    <div id="loading">
+      <div class="loading-header">
+        <div class="loading-title-wrap">
+          <div class="loading-spinner-mini"></div>
+          <span class="loading-text-shimmer">データを集計中...</span>
+        </div>
+        <span class="loading-percent" id="loadingPercent">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+      <div class="loading-subtext">※データ量によって数秒かかる場合があります。少々お待ちください。</div>
+    </div>
     
     <!-- 結果表示エリア -->
     <div id="outputArea" style="display:none;">
@@ -833,20 +995,18 @@
     </div>
   </div>
 
-  <!-- 単日データ連動型モーダル -->
+  <!-- 詳細・集計モーダル -->
   <div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-title">
-          <span>🎰 台番 <span id="modalMachineId">-</span></span>
+          <span id="modalHeaderTitle">🎰 台番 <span id="modalMachineId">-</span></span>
           <span class="modal-subtitle" id="modalSCountInfo">Sランク獲得: 0回</span>
         </div>
         <button class="modal-close-btn" onclick="closeModal(event)">✕</button>
       </div>
       
-      <div class="modal-body" id="modalDayCardsList">
-        <!-- JSで日付ごとの単日データカードが動的に挿入されます -->
-      </div>
+      <div class="modal-body" id="modalDayCardsList"></div>
     </div>
   </div>
 
@@ -854,6 +1014,9 @@
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxzl_mFcMUhiR-O-e4lCrDeN5IcVNjo4yvRtNpuish8Y5bmKAn4JwQxpP7d2pHSB7Cdvw/exec";
     
     var globalMachineRecordsMap = {};
+    var globalAllRawRecords = []; 
+
+    var progressInterval = null;
 
     const EXACT_IGNORE_WORDS = [
       "開始日", "終了日", "特定日", "複合イベント", "曜日", "日付", "イベント", 
@@ -922,6 +1085,42 @@
       }
     };
 
+    function startProgressBar() {
+      var bar = document.getElementById('progressBarFill');
+      var text = document.getElementById('loadingPercent');
+      var progress = 0;
+      
+      bar.style.width = '0%';
+      text.textContent = '0%';
+
+      if (progressInterval) clearInterval(progressInterval);
+
+      // 擬似的にプログレスを進める（応答が来たら一気に100%にする）
+      progressInterval = setInterval(function() {
+        if (progress < 90) {
+          var increment = Math.random() * (progress < 50 ? 8 : 3);
+          progress += increment;
+          if (progress > 90) progress = 90;
+          bar.style.width = progress + '%';
+          text.textContent = Math.floor(progress) + '%';
+        }
+      }, 150);
+    }
+
+    function finishProgressBar(callback) {
+      if (progressInterval) clearInterval(progressInterval);
+      var bar = document.getElementById('progressBarFill');
+      var text = document.getElementById('loadingPercent');
+      
+      bar.style.width = '100%';
+      text.textContent = '100%';
+
+      setTimeout(function() {
+        document.getElementById('loading').style.display = 'none';
+        if (callback) callback();
+      }, 300);
+    }
+
     function switchTab(tabId, btn) {
       var contents = document.querySelectorAll('.tab-content');
       contents.forEach(function(content) { content.classList.remove('active'); });
@@ -950,6 +1149,8 @@
       document.getElementById('loading').style.display = 'block';
       document.getElementById('outputArea').style.display = 'none';
       
+      startProgressBar();
+      
       var conditions = {
         startDate: startDateVal,
         endDate: endDateVal,
@@ -965,16 +1166,18 @@
       })
       .then(response => response.json())
       .then(res => {
-        if (res.status === "success") {
-          showResults(res.data, startDateVal, endDateVal);
-        } else {
-          alert("エラー: " + res.message);
-          document.getElementById('loading').style.display = 'none';
-        }
+        finishProgressBar(function() {
+          if (res.status === "success") {
+            showResults(res.data, startDateVal, endDateVal);
+          } else {
+            alert("エラー: " + res.message);
+          }
+        });
       })
       .catch(err => {
-        alert("通信エラーが発生しました: " + err);
-        document.getElementById('loading').style.display = 'none';
+        finishProgressBar(function() {
+          alert("通信エラーが発生しました: " + err);
+        });
       });
     }
 
@@ -1017,7 +1220,6 @@
     }
 
     function showResults(response, startDate, endDate) {
-      document.getElementById('loading').style.display = 'none';
       if (!response || !response.mapLayout) {
         alert('エラー：島図データが取得できませんでした。');
         return;
@@ -1026,11 +1228,15 @@
       
       var rateMap = {};
       globalMachineRecordsMap = {}; 
+      globalAllRawRecords = [];
       var tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
       var isSingleDay = (startDate && endDate && startDate === endDate);
       var totalMachines = 0;
+      var totalGamesSum = 0;
+
+      var modelGamesMap = {};
 
       var dayWeekday = "";
       var dayTokuteibi = "";
@@ -1060,11 +1266,28 @@
 
           var dayRecords = Array.isArray(row[3]) ? row[3] : [];
 
-          if (isSingleDay && dayRecords.length > 0) {
+          if (dayRecords.length > 0) {
             dayRecords.forEach(function(rec) {
-              if (!dayTokuteibi && rec.tokuteibi) dayTokuteibi = rec.tokuteibi;
-              if (!dayFukugo && rec.fukugo) dayFukugo = rec.fukugo;
-              if (!dayWeekday && rec.weekday) dayWeekday = rec.weekday;
+              rec.machineId = machineId;
+              globalAllRawRecords.push(rec);
+
+              var g = Number(rec.games) || 0;
+              totalGamesSum += g;
+
+              var mName = rec.machineName ? String(rec.machineName).trim() : "";
+              if (mName) {
+                if (!modelGamesMap[mName]) {
+                  modelGamesMap[mName] = { totalG: 0, count: 0 };
+                }
+                modelGamesMap[mName].totalG += g;
+                modelGamesMap[mName].count += 1;
+              }
+
+              if (isSingleDay) {
+                if (!dayTokuteibi && rec.tokuteibi) dayTokuteibi = rec.tokuteibi;
+                if (!dayFukugo && rec.fukugo) dayFukugo = rec.fukugo;
+                if (!dayWeekday && rec.weekday) dayWeekday = rec.weekday;
+              }
             });
           }
 
@@ -1090,12 +1313,26 @@
         if (!dayWeekday && response.weekday) dayWeekday = response.weekday;
       }
 
+      var highGModelSet = new Set();
+      Object.keys(modelGamesMap).forEach(function(mName) {
+        var stat = modelGamesMap[mName];
+        if (stat.count > 0) {
+          var avgG = Math.round(stat.totalG / stat.count);
+          if (avgG >= 7000) {
+            highGModelSet.add(mName);
+          }
+        }
+      });
+
       var summaryCard = document.getElementById('singleDaySummaryCard');
       if (isSingleDay && totalMachines > 0) {
         var totalDiff = (response.totalDiff !== undefined && response.totalDiff !== null) ? Number(response.totalDiff) : 0;
         var avgDiff = Math.round(totalDiff / totalMachines);
+        var avgGames = Math.round(totalGamesSum / totalMachines);
+
         var totalDiffFormatted = (totalDiff > 0 ? '+' : '') + totalDiff.toLocaleString();
         var avgDiffFormatted = (avgDiff > 0 ? '+' : '') + avgDiff.toLocaleString();
+        var avgGamesFormatted = avgGames.toLocaleString();
 
         var totalClass = totalDiff >= 0 ? 'plus' : 'minus';
         var avgClass = avgDiff >= 0 ? 'plus' : 'minus';
@@ -1127,6 +1364,10 @@
             '<div class="summary-item">' +
               '<span class="summary-label">全台平均差枚数:</span>' +
               '<span class="summary-value ' + avgClass + '">' + avgDiffFormatted + ' 枚 /台</span>' +
+            '</div>' +
+            '<div class="summary-item">' +
+              '<span class="summary-label">全台平均回転数:</span>' +
+              '<span class="summary-value games">' + avgGamesFormatted + ' G</span>' +
             '</div>' +
             '<div class="summary-item">' +
               '<span class="summary-label">設置総台数:</span>' +
@@ -1301,7 +1542,12 @@
               alignStyle = 'justify-content: flex-start !important; text-align: start !important; padding-top: 4px;';
             }
 
-            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + singleClass + '" style="' + spanStyle + ' font-size: ' + customFontSize + '; ' + alignStyle + '" title="' + cellValue + '">' + cellValue + '</div>';
+            var isHighGameModel = highGModelSet.has(cellValue);
+            var highGameClass = isHighGameModel ? ' cell-high-game-label' : '';
+
+            var modelClickAttr = 'onclick="openModelSummaryModal(\'' + cellValue.replace(/'/g, "\\'") + '\')"';
+
+            htmlBuilder += '<div class="grid-cell cell-text-label' + vertClass + singleClass + highGameClass + '" ' + modelClickAttr + ' style="' + spanStyle + ' font-size: ' + customFontSize + '; ' + alignStyle + ' cursor: pointer;" title="クリックで【' + cellValue + '】の全台集計を表示">' + cellValue + '</div>';
           }
         }
       }
@@ -1311,7 +1557,7 @@
     function openMachineModal(machineId) {
       var data = globalMachineRecordsMap[machineId] || { sCount: 0, sRate: '0.0%', records: [] };
       
-      document.getElementById('modalMachineId').textContent = machineId;
+      document.getElementById('modalHeaderTitle').innerHTML = '🎰 台番 <span>' + machineId + '</span>';
       document.getElementById('modalSCountInfo').textContent = 'Sランク獲得: ' + data.sCount + '回 (' + data.sRate + ')';
 
       var listContainer = document.getElementById('modalDayCardsList');
@@ -1324,7 +1570,6 @@
           var rankVal = rec.rank || '-';
           var isRankS = (rankVal === "S");
 
-          // Sランクの有無で背景ハイライト用のクラスを付与
           card.className = isRankS ? 'day-card rank-s-card' : 'day-card';
 
           var diffVal = rec.diff !== undefined ? Number(rec.diff) : null;
@@ -1388,6 +1633,88 @@
         listContainer.innerHTML = '<div class="no-data-msg">指定期間内に該当する稼働データはありません</div>';
       }
 
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function openModelSummaryModal(targetModelName) {
+      var cleanTarget = targetModelName.trim();
+
+      var matchedRecords = globalAllRawRecords.filter(function(rec) {
+        if (!rec.machineName) return false;
+        var name = String(rec.machineName).trim();
+
+        if (name === cleanTarget) return true;
+
+        var hasTwo = function(str) { return /[2２]/.test(str); };
+        
+        if (!hasTwo(cleanTarget) && hasTwo(name)) return false;
+        if (hasTwo(cleanTarget) && !hasTwo(name)) return false;
+
+        return name.includes(cleanTarget) || cleanTarget.includes(name);
+      });
+
+      document.getElementById('modalHeaderTitle').innerHTML = '🎰 <span>' + cleanTarget + '</span>';
+      
+      var listContainer = document.getElementById('modalDayCardsList');
+      listContainer.innerHTML = '';
+
+      if (matchedRecords.length === 0) {
+        document.getElementById('modalSCountInfo').textContent = '該当データなし';
+        listContainer.innerHTML = '<div class="no-data-msg">指定期間内に「' + cleanTarget + '」の稼働データはありません</div>';
+        document.getElementById('detailModal').style.display = 'flex';
+        return;
+      }
+
+      var totalDiff = 0;
+      var totalGames = 0;
+      var sCount = 0;
+      var uniqueMachines = new Set();
+
+      matchedRecords.forEach(function(rec) {
+        totalDiff += Number(rec.diff) || 0;
+        totalGames += Number(rec.games) || 0;
+        if (rec.rank === "S") sCount++;
+        if (rec.machineId) uniqueMachines.add(rec.machineId);
+      });
+
+      var sampleCount = matchedRecords.length;
+      var machineCount = uniqueMachines.size || 1;
+
+      var avgDiff = Math.round(totalDiff / sampleCount);
+      var avgGames = Math.round(totalGames / sampleCount);
+
+      var totalDiffFormatted = (totalDiff > 0 ? '+' : '') + totalDiff.toLocaleString();
+      var avgDiffFormatted = (avgDiff > 0 ? '+' : '') + avgDiff.toLocaleString();
+      var totalClass = totalDiff >= 0 ? 'red' : 'blue';
+      var avgClass = avgDiff >= 0 ? 'red' : 'blue';
+
+      document.getElementById('modalSCountInfo').textContent = '対象台数: ' + machineCount + '台 (計' + sampleCount + 'サンプル)';
+
+      var box = document.createElement('div');
+      box.className = 'model-summary-box';
+      box.innerHTML = 
+        '<div style="font-size:15px; font-weight:800; color:#0f172a; margin-bottom:4px;">📊 機種集計データ分析</div>' +
+        '<div style="font-size:12px; color:#64748b;">指定期間・条件内の集計パフォーマンス結果です。</div>' +
+        '<div class="model-summary-grid">' +
+          '<div class="model-summary-item">' +
+            '<div class="model-summary-label">合計差枚数</div>' +
+            '<div class="model-summary-val ' + totalClass + '">' + totalDiffFormatted + ' 枚</div>' +
+          '</div>' +
+          '<div class="model-summary-item">' +
+            '<div class="model-summary-label">平均差枚数</div>' +
+            '<div class="model-summary-val ' + avgClass + '">' + avgDiffFormatted + ' 枚 /台</div>' +
+          '</div>' +
+          '<div class="model-summary-item">' +
+            '<div class="model-summary-label">平均回転数</div>' +
+            '<div class="model-summary-val games">' + avgGames.toLocaleString() + ' G</div>' +
+          '</div>' +
+          '<div class="model-summary-item">' +
+            '<div class="model-summary-label">Sランク獲得数</div>' +
+            '<div class="model-summary-val red">' + sCount + ' 回</div>' +
+          '</div>' +
+        '</div>';
+
+      listContainer.appendChild(box);
       document.getElementById('detailModal').style.display = 'flex';
     }
 
